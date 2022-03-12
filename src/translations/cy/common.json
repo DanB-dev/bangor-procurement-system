@@ -1,0 +1,21 @@
+{
+	"customNavbar": {
+		"brand": "System Gaffael Prifysgol Bangor",
+		"login": "Mewngofnodi",
+		"logout": {
+			"loggingOut": "Allgofnodi...",
+			"logout": "Allgofnodi"
+		},
+		"signup": "Cofrestrwch"
+	},
+	"sidebar": {
+		"footer": "Hawlfraint © (Insert Name Here)",
+		"links": {
+			"budgets": "Cyllidebau",
+			"dashboard": "Dangosfwrdd",
+			"newOrder": "Archeb Newydd",
+			"orders": "Archebion"
+		},
+		"title": "Helo {{displayName}}"
+	}
+}

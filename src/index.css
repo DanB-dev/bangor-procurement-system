@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Asap&family=Roboto&display=swap');
+/* variables */
+:root {
+  --heading-color: #444;
+  --heading-color-dark: rgb(209, 209, 209);
+  --text-color: #999;
+  --text-color-dark: #b6b6b6;
+  --primary-color: #b82234;
+  --highlight-color: #de293e;
+  --bg-color: #e4e4e4;
+  --bg-color-dark: #333;
+}
+
+/* base styles */
+body {
+  font-family: Asap, Poppins, sans-serif;
+  margin: 0;
+  font-size: 1.1em;
+  background: var(--bg-color);
+}
+
+ul,
+li,
+p,
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  padding: 0;
+}
+ul {
+  list-style-type: none;
+}
+
+/* layout */
+.page-title {
+  font-size: 1em;
+  color: var(--heading-color);
+  display: inline-block;
+}
+.page-title.dark {
+  color: var(--heading-color-dark);
+}
+
+/* forms */
+.form-control:focus {
+  color: #212529;
+  background-color: #fff;
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(135, 13, 13, 0.363);
+}
+.form-check-input:focus {
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(135, 13, 13, 0.363);
+}
+.form-switch .form-check-input:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23df4e5f'/%3e%3c/svg%3e");
+}
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+th {
+  border-right: 2px solid;
+  border-color: #871825;
+}
+th:first-of-type {
+  border-radius: 3px 0 0 0;
+}
+th:last-of-type {
+  border-radius: 0 3px 0 0;
+  border-right: none;
+}
+.table > :not(:first-child) {
+  border-top: 2px solid #871825;
+}
+.table > tbody {
+  vertical-align: middle;
+}
+
+.error {
+  color: red;
+  background: pink;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 10px 0;
+  box-shadow: 3px 3px 2px rgba(0, 0, 0, 0.1);
+}
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+.btn-outline-primary {
+  border: 1px solid;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.btn-primary.disabled,
+.btn-primary:disabled {
+  color: #fff;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.btn-outline-primary.disabled,
+.btn-outline-primary:disabled {
+  color: var(--primary-color);
+  background-color: transparent;
+}
+.btn-outline-primary:hover {
+  color: #fff;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.btn-primary {
+  color: #fff;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.btn-primary:hover {
+  color: #fff;
+  background-color: var(--highlight-color);
+  border-color: var(--highlight-color);
+}
+.badge.completed {
+  background-color: rgb(68, 148, 111);
+}
+.badge.active {
+  background-color: rgb(11, 138, 0);
+}
+.badge.inactive {
+  background-color: rgb(169, 45, 0);
+}
+.badge.answered {
+  background-color: rgb(150, 95, 189);
+}
+.badge.member-reply {
+  background-color: #3f51b5;
+}
+.badge.admin {
+  background-color: #c40000;
+}
+.badge.tech {
+  background-color: var(--primary-color);
+}
+.badge.member {
+  background-color: #3f51b5;
+}
+
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: #8f54a0 #ffffff;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 10px;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: rgba(22, 22, 22, 0.816);
+  color: #fff;
+  text-align: center;
+  font-size: 0.8em;
+  padding: 5px 0px;
+  border-radius: 6px;
+  top: 100%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.1s;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+.tooltip .tooltiptext::after {
+  content: ' ';
+  position: absolute;
+  bottom: 100%; /* At the top of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent rgba(22, 22, 22, 0.816) transparent;
+}
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  transition-delay: 0.3s;
+  opacity: 1;
+  visibility: visible;
+}
+
+.close {
+  cursor: pointer;
+}
+.close:hover {
+  filter: invert(50%);
+}
+.d-flex {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: space-between;
+}

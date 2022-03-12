@@ -1,0 +1,73 @@
+.App {
+  display: flex;
+}
+.App.dark {
+  background-color: var(--bg-color-dark);
+  height: 100vh;
+}
+
+.sorting,
+.sorting_asc,
+.sorting_desc {
+  font-family: Roboto, sans-serif;
+  position: relative;
+}
+.sorting::before,
+.sorting_asc::before,
+.sorting_desc::before {
+  right: 1em;
+  content: '\2191';
+}
+.sorting::after,
+.sorting_asc::after,
+.sorting_desc::after {
+  right: 0.5em;
+  content: '\2193';
+}
+.sorting::before,
+.sorting_asc::before,
+.sorting_asc::after,
+.sorting_desc::before,
+.sorting_desc::after,
+.sorting::after {
+  position: absolute;
+  bottom: 0.5em;
+  display: block;
+  opacity: 0.3;
+}
+.sorting_asc::before {
+  opacity: 1;
+}
+.sorting_desc::after {
+  opacity: 1;
+}
+.rbt-input {
+  min-height: 40px;
+}
+
+.auth-form {
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 40px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 3px 3px 1px rgba(0, 0, 0, 0.2);
+  background: #fff;
+}
+.auth-form.dark {
+  border: 1px solid #333;
+  background: #555;
+}
+.auth-form.dark h2 {
+  color: var(--heading-color-dark);
+}
+.auth-form.dark span {
+  color: var(--text-color-dark);
+}
+
+.auth-form hr {
+  border: 1px solid #ddd;
+}
+.auth-form.dark hr {
+  border: 1px solid #7b7b7b;
+}

@@ -1,0 +1,21 @@
+{
+	"customNavbar": {
+		"brand": "Bangor University Procurement System",
+		"login": "Login",
+		"logout": {
+			"loggingOut": "Logging Out...",
+			"logout": "Logout"
+		},
+		"signup": "Sign up"
+	},
+	"sidebar": {
+		"footer": "Copyright © (Insert Name Here)",
+		"links": {
+			"budgets": "Budgets",
+			"dashboard": "Dashboard",
+			"newOrder": "New Order",
+			"orders": "Orders"
+		},
+		"title": "Hey {{displayName}}"
+	}
+}

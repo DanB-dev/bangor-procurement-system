@@ -1,0 +1,76 @@
+.project-filter {
+  margin: 30px auto;
+
+  margin-bottom: 10px;
+}
+.project-filter .nav {
+  justify-content: center;
+  display: flex;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 4px;
+  text-transform: capitalize;
+}
+.project-filter .nav .btn {
+  text-transform: capitalize;
+}
+.project-filter.dark .nav {
+  justify-content: center;
+  display: flex;
+  padding: 10px;
+  background-color: #555;
+  border-radius: 4px;
+}
+.project-filter p {
+  font-size: 0.9em;
+  margin: 10px;
+}
+.project-filter.dark p {
+  color: var(--text-color-dark);
+}
+.project-filter button {
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  font-weight: bold;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.9em;
+  border-radius: 0;
+}
+.project-filter.dark button {
+  color: var(--text-color-dark);
+}
+.project-filter button:hover {
+  border-radius: 4px;
+}
+.project-filter button:last-child {
+  border: 0;
+}
+.project-filter button.active {
+  color: var(--primary-color);
+}
+.project-filter button:focus {
+  box-shadow: none;
+}
+
+.actions {
+  text-align: center;
+  background: rgb(206, 206, 206);
+  border-radius: 4px;
+}
+
+.actions h5 {
+  margin: 5px;
+  color: #333;
+}
+.actions img {
+  cursor: pointer;
+  vertical-align: middle;
+}
+.actions img {
+  filter: invert(40%);
+}
+.actions img:hover {
+  filter: invert(0%);
+}

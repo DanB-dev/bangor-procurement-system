@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
+import { useEffect, useState } from 'react';
 
 import {
   Badge,
@@ -8,55 +9,115 @@ import {
   ListGroupItem,
 } from 'react-bootstrap';
 import { Avatar } from '../../components/avatar/Avatar';
+import { useCollection } from '../../hooks/useCollection';
+import expandMore from '../../assets/expandMore.svg';
+import expandLess from '../../assets/expandLess.svg';
 
 const BudgetMain = ({ budget }) => {
+  const { documents } = useCollection('events', ['budgetId', '==', budget.id]);
+  const [data, setData] = useState([]);
+  const [sortActivity, setSortActivity] = useState('desc');
+  useEffect(() => {
+    if (documents) {
+      const options = [];
+      documents.forEach((document) => {
+        options.push({
+          uid: document.id,
+          holder: document.holder,
+          by: document.by,
+          createdAt: document.createdAt,
+          event: document.event,
+        });
+      });
+      setData(options);
+    }
+  }, [setData, documents]);
+
   return (
     <Container fluid>
       <h3>{budget.name}</h3>
       <h5>
         Created by {budget.createdBy.displayName} | Code: {budget.code}
       </h5>
-      <Button variant="secondary">Delete</Button>
+      <Button variant="outline-secondary">Delete</Button>
       <hr />
-      <div style={{ maxHeight: 650, overflowY: 'scroll' }}>
-        <h5 className="mt-3">Details</h5>
+      <div>
+        <div className="d-flex flex-row justify-content-between">
+          <h6 className={`mt-3`}>Activity ({data.length})</h6>
 
-        <hr />
+          {sortActivity === 'desc' ? (
+            <Button
+              size="sm"
+              variant="text"
+              className="ps-3 hover"
+              onClick={() => setSortActivity('asc')}
+            >
+              Descending
+              <img
+                className="text-center"
+                src={expandMore}
+                alt="sorting_desc"
+              />
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="text"
+              className="ps-3 hover"
+              onClick={() => setSortActivity('desc')}
+            >
+              Ascending
+              <img className="text-center" src={expandLess} alt="sorting_asc" />
+            </Button>
+          )}
+        </div>
 
-        <h6 className="mt-3">Activity</h6>
-        {budget.activity && budget.activity.length > 0 ? (
-          <ListGroup className="mt-4">
-            {budget.activity
+        {data && data.length > 0 ? (
+          <ListGroup
+            className="mt-4"
+            style={{ maxHeight: 400, overflowY: 'scroll' }}
+          >
+            {data
+              .sort((a, b) =>
+                sortActivity === 'desc'
+                  ? a.createdAt.toDate() > b.createdAt.toDate()
+                    ? 1
+                    : -1
+                  : a.createdAt.toDate() < b.createdAt.toDate()
+                  ? 1
+                  : -1
+              )
               .map((act) => (
-                <ListGroupItem key={act.timestamp} className="mb-1">
+                <ListGroupItem
+                  key={act.uid + act.by.displayName}
+                  className="mb-1"
+                >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar size={'40px'} src={act.photoURL} />
-                    <p className="mx-2">{act.displayName}</p>
+                    <Avatar size={'40px'} src={act.by.photoURL} />
 
-                    {act.type === 'created' && (
-                      <p className="me-auto">
-                        {act.by} - {act.type} budget:{' '}
+                    {act.event === 'created' && (
+                      <p className="ms-2 me-auto">
+                        {act.by.displayName} - {act.event} budget:{' '}
                         <span className="fw-bold">{budget.code}</span>
                       </p>
                     )}
-                    {(act.type === 'active' || act.type === 'inactive') && (
-                      <p className="me-auto">
-                        {act.by} - Set budget status to:{' '}
-                        <span className="text-capitalize fw-bold">
-                          {act.type}
-                        </span>
+                    {(act.event === 'Added Holder' ||
+                      act.event === 'Removed Holder') && (
+                      <p className="ms-2 me-auto">
+                        {act.by.displayName} -{' '}
+                        <span className="text-capitalize">{act.event}</span>:
+                        <span className="fw-bold"> {act.holder}</span>
                       </p>
                     )}
                     <small className="text-muted">
-                      {formatDistanceToNow(act.timestamp.toDate(), {
+                      {formatDistanceToNow(act.createdAt.toDate(), {
                         addSuffix: true,
                       })}
                     </small>
-                    <Badge className={`${act.role} ms-2`} bg="none">
-                      {act.role}
+                    <Badge className={`${act.by.role} ms-2`} bg="none">
+                      <span className="text-capitalize">{act.by.role}</span>
                     </Badge>
                   </div>
-                  <div></div>
                 </ListGroupItem>
               ))
               .reverse()}

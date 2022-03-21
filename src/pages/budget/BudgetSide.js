@@ -1,29 +1,42 @@
 import { formatDistanceToNow } from 'date-fns';
-import React, { useEffect, useState } from 'react';
-import { Button, Container, InputGroup } from 'react-bootstrap';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Button, Container, InputGroup } from 'react-bootstrap';
 import Select from 'react-select';
 import { Avatar } from '../../components/avatar/Avatar';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useCollection } from '../../hooks/useCollection';
 import { useFirestore } from '../../hooks/useFirestore';
 import Close from '../../assets/close.svg';
+import { useHistory } from 'react-router-dom';
 
 const BudgetSide = ({ budget }) => {
   const { user } = useAuthContext();
   const { documents } = useCollection('users');
-  const { updateDocument } = useFirestore('budgets');
+  const [, , updateDocumentRemoveHolder, responseRemoveHolder] =
+    useFirestore('budgets');
+  const [, , updateDocumentAddHolder, responseAddHolder] =
+    useFirestore('budgets');
+  const [_addEvent, , , eventResponse] = useFirestore('events');
+  const addEventReference = useRef(_addEvent);
+  const addEvent = addEventReference.current;
+  const holder = useRef();
+
   const [users, setUsers] = useState([]);
   const [assignedUsers, setAssignedUsers] = useState([]);
   const [assignedToMe, setAssignedToMe] = useState(false);
+  const history = useHistory();
 
   useEffect(() => {
-    if (user.role === 'admin') {
+    if (user.role === 'Admin') {
       setAssignedToMe(true);
     }
     if (documents) {
       const options = [];
       documents.forEach((u) => {
-        if (u.tech && !budget.holders.find(({ id }) => id === u.uid)) {
+        if (
+          u.role === 'Admin' &&
+          !budget.holders.find(({ id }) => id === u.uid)
+        ) {
           options.push({ value: u, label: u.displayName });
         }
       });
@@ -32,7 +45,7 @@ const BudgetSide = ({ budget }) => {
   }, [documents, budget.holders, user.role]);
 
   const handleClick = () => {
-    updateDocument(budget.id, {
+    updateDocumentAddHolder(budget.id, {
       holders: [
         ...budget.holders,
         ...assignedUsers.map(({ value: { displayName, photoURL, id } }) => {
@@ -44,15 +57,73 @@ const BudgetSide = ({ budget }) => {
         }),
       ],
     });
+    let users = [];
+    holder.current = assignedUsers.forEach(({ value: { displayName } }, i) => {
+      console.log(i + '/' + assignedUsers.length);
+      users.push(
+        assignedUsers.length > i + 1 ? displayName + ', ' : displayName
+      );
+    });
+    holder.current = users;
     setAssignedUsers('');
   };
 
-  const handleRemove = (id) => {
-    updateDocument(budget.id, {
-      assignedUsersList: budget.assignedUsersList.filter((u) => {
+  useEffect(() => {
+    if (responseAddHolder.success) {
+      addEvent({
+        type: 'budget',
+        event: 'Added Holder',
+        holder: holder.current,
+        by: {
+          displayName: user.displayName,
+          uid: user.uid,
+          photoURL: user.photoURL,
+          role: user.role,
+        },
+        budgetId: responseAddHolder.id,
+      });
+    }
+  }, [
+    addEvent,
+    responseAddHolder.id,
+    responseAddHolder.success,
+    user.displayName,
+    user.photoURL,
+    user.role,
+    user.uid,
+  ]);
+  useEffect(() => {
+    if (responseRemoveHolder.success) {
+      addEvent({
+        type: 'budget',
+        event: 'Removed Holder',
+        holder: holder.current,
+        by: {
+          displayName: user.displayName,
+          uid: user.uid,
+          photoURL: user.photoURL,
+          role: user.role,
+        },
+        budgetId: responseRemoveHolder.id,
+      });
+    }
+  }, [
+    addEvent,
+    responseRemoveHolder.id,
+    responseRemoveHolder.success,
+    user.displayName,
+    user.photoURL,
+    user.role,
+    user.uid,
+  ]);
+
+  const handleRemove = (id, displayName) => {
+    updateDocumentRemoveHolder(budget.id, {
+      holders: budget.holders.filter((u) => {
         return u.id !== id;
       }),
     });
+    holder.current = displayName;
   };
 
   return (
@@ -67,23 +138,40 @@ const BudgetSide = ({ budget }) => {
         budget.holders.map((user) => (
           <div
             key={user.id}
-            style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+            }}
           >
-            <Avatar size={'40px'} src={user.photoURL} />{' '}
-            <span className="ms-2">{user.displayName}</span>
-            <img
-              src={Close}
-              className="close"
-              alt="Close"
-              onClick={() => handleRemove(user.id)}
-            />
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                borderRadius: '6px',
+              }}
+              className="hover p-1 m-0"
+            >
+              <Avatar size={'40px'} src={user.photoURL} />{' '}
+              <span
+                className="mx-2"
+                onClick={() => history.push(`/profile/${user.id}`)}
+              >
+                {user.displayName}
+              </span>
+              <img
+                src={Close}
+                className="close"
+                alt="Close"
+                onClick={() => handleRemove(user.id, user.displayName)}
+              />
+            </div>
           </div>
         ))
       ) : (
         <small>No one Assigned Yet</small>
       )}
       {assignedToMe && (
-        <InputGroup style={{ width: '100%' }}>
+        <InputGroup style={{ width: '100%', marginTop: '10px' }}>
           <Select
             options={users}
             onChange={(option) => setAssignedUsers(option)}
@@ -104,6 +192,15 @@ const BudgetSide = ({ budget }) => {
         </InputGroup>
       )}
       <hr />
+      {eventResponse.error && (
+        <Alert variant="danger">{eventResponse.error}</Alert>
+      )}
+      {responseRemoveHolder.error && (
+        <Alert variant="danger">{responseRemoveHolder.error}</Alert>
+      )}
+      {responseAddHolder.error && (
+        <Alert variant="danger">{responseAddHolder.error}</Alert>
+      )}
     </Container>
   );
 };

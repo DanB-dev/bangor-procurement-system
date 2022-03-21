@@ -17,7 +17,7 @@ const Budget = () => {
     return <div className="loading">Loading...</div>;
   }
   return (
-    <Container>
+    <Container fluid>
       <Row>
         <Col md={8}>
           <BudgetMain budget={document} />

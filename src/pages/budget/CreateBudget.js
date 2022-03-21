@@ -1,5 +1,5 @@
 //General
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 //Form Requirements
 import { useForm } from 'react-hook-form';
@@ -18,15 +18,20 @@ import { useAuthContext } from '../../hooks/useAuthContext';
 //Components
 import { Alert, Button, Card, Form } from 'react-bootstrap';
 import { FormGroup } from '../../components/form/FormGroup';
+import { toast } from 'react-toastify';
 
 const CreateBudget = () => {
   const { documents, error } = useCollection('users');
-  const [addBudget, , , _budgetResponse] = useFirestore('budgets'); // Access the addDocument function in the firestore Hook.
-  const budgetResponse = useRef(_budgetResponse).current;
-  const [addEvent, , , eventResponse] = useFirestore('events');
+  const [addBudget, , , budgetResponse] = useFirestore('budgets'); // Access the addDocument function in the firestore Hook.
+  const [_addEvent, , ,] = useFirestore('events');
+  const addEventReference = useRef(_addEvent);
+  const addEvent = addEventReference.current;
+
   const {
     user: { displayName, photoURL, uid, role },
   } = useAuthContext();
+
+  const [isPending, setIsPending] = useState(false);
 
   // Import the form function from the UseForm Hook.
   const {
@@ -51,55 +56,97 @@ const CreateBudget = () => {
     }
   }, [documents]);
 
-  // If the budget form is submitted, log the event.
+  //Handling form submissions. All errors are handled by the Yup Resolver before this is triggered.
+  const onSubmit = async ({ name, code, holders }) => {
+    toast.promise(
+      addBudget(
+        {
+          name,
+          code,
+          createdBy: {
+            displayName,
+            photoURL,
+            uid,
+          },
+          holders: [
+            ...holders.map(({ value: { displayName, id, photoURL } }) => {
+              return {
+                displayName,
+                photoURL,
+                id,
+              };
+            }),
+          ],
+        },
+        ['code', '==', code]
+      ),
+      {
+        pending: {
+          render() {
+            setIsPending(true);
+            return 'Creating...';
+          },
+        },
+        success: {
+          render() {
+            setIsPending(false);
+            return (
+              <div>
+                Budget <span className="fw-bold">{name}</span> Created!
+              </div>
+            );
+          },
+        },
+        error: {
+          render({ data }) {
+            setIsPending(false);
+            return `${data}`;
+          },
+        },
+      }
+    );
+    reset(defaultValues);
+  };
+
   useEffect(() => {
-    const submitter = () => {
-      if (budgetResponse.success) {
+    if (budgetResponse.success) {
+      toast.promise(
         addEvent({
           type: 'budget',
           event: 'created',
           by: { displayName, uid, photoURL, role },
           budgetId: budgetResponse.id,
-        });
-        reset(defaultValues);
-      }
-    };
-    submitter();
+        }),
+        {
+          pending: {
+            render() {
+              return 'Logging...';
+            },
+          },
+          success: {
+            type: 'info',
+            render() {
+              return `Logged Creation `;
+            },
+          },
+          error: {
+            render() {
+              return 'Error Logging Request!';
+            },
+          },
+        }
+      );
+    }
   }, [
-    addEvent,
-    budgetResponse.id,
-    budgetResponse.success,
     displayName,
+    uid,
     photoURL,
     role,
-    uid,
+    budgetResponse.success,
+    budgetResponse.id,
+    addEvent,
     reset,
   ]);
-  //Handling form submissions. All errors are handled by the Yup Resolver before this is triggered.
-  const onSubmit = async ({ name, code, holders, budget }) => {
-    await addBudget(
-      {
-        name,
-        code,
-        status: 'active',
-        createdBy: {
-          displayName,
-          photoURL,
-          uid,
-        },
-        holders: [
-          ...holders.map(({ value: { displayName, id, photoURL } }) => {
-            return {
-              displayName,
-              photoURL,
-              id,
-            };
-          }),
-        ],
-      },
-      ['code', '==', code]
-    );
-  };
 
   return (
     <Card>
@@ -107,12 +154,6 @@ const CreateBudget = () => {
         Create a new Budget
       </Card.Header>
       <Card.Body>
-        {_budgetResponse.error && (
-          <Alert variant={'danger'}>{_budgetResponse.error}</Alert>
-        )}
-        {eventResponse.error && (
-          <Alert variant={'danger'}>{eventResponse.error}</Alert>
-        )}
         {error && <Alert variant={'danger'}>{error}</Alert>}
 
         <Form onSubmit={handleSubmit(onSubmit)}>
@@ -125,12 +166,12 @@ const CreateBudget = () => {
               control={control}
             />
           ))}
-          {!budgetResponse.isPending && (
+          {!isPending && (
             <Button variant="outline-primary" className="w-100" type="submit">
               Create Budget
             </Button>
           )}
-          {budgetResponse.isPending && (
+          {isPending && (
             <Button variant="outline-primary" className="w-100" disabled>
               Creating Budget...
             </Button>

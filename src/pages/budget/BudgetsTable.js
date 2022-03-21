@@ -16,12 +16,9 @@ const BudgetsTable = () => {
           code,
           name,
           holders: [
-            ...holders.map((holder) => {
-              if (holders.length > 1) {
-                return holder.displayName + ', ';
-              }
-              return holder.displayName;
-            }),
+            ...holders.map(({ displayName }, i) =>
+              holders.length > i + 1 ? displayName + ', ' : displayName
+            ),
           ],
           createdBy: createdBy.displayName,
           id,

@@ -31,7 +31,7 @@ export const useSignup = () => {
         .then(() => {
           return projectAuth.signInWithEmailAndPassword(email, password);
         });
-
+      console.log(thumbnail);
       const img = await projectStorage
         .ref(`thumbnails/${response.user.uid}/${thumbnail.name}`)
         .put(thumbnail);
@@ -47,7 +47,7 @@ export const useSignup = () => {
         uid: response.user.uid,
         roomNo: '',
         telNo: '',
-        role: 'user',
+        role: 'User',
       });
 
       dispatch({ type: 'LOGIN', payload: response.user });

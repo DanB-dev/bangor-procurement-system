@@ -24,7 +24,7 @@ export const useLogin = () => {
         });
 
       if (!response) {
-        throw new Error('Could not fetch the user account');
+        throw new Error('Could not fetch the user account.');
       }
 
       const userdocs = projectFirestore

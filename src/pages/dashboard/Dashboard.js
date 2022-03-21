@@ -1,16 +1,15 @@
 import { useAuthContext } from '../../hooks/useAuthContext';
-import { useTheme } from '../../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
 import { Container, Alert } from 'react-bootstrap';
 
 export const Dashboard = () => {
+  const { t } = useTranslation('common');
   const { user } = useAuthContext();
-  const { mode } = useTheme();
   const error = '';
   return (
-    <div className="project-content">
-      <h2 className={`page-title ${mode}`}>Dashboard</h2>
+    <div className="dashboard">
       {error && (
         <Container>
           <Alert variant="danger">{error}</Alert>
@@ -20,18 +19,22 @@ export const Dashboard = () => {
         <Container>
           <Alert variant="warning">
             <Alert.Heading>
-              Looks like your profile is missing some key information. &#40;
+              {t('alerts.dashboard.missingInfo.header')} &#40;
               <u>
                 {!user.roomNo && !user.telNo
-                  ? 'A Telephone Number, and a Room Number'
-                  : (!user.roomNo && 'A Room Number') ||
-                    (!user.telNo && 'A Telephone Number')}
+                  ? t('alerts.dashboard.missingInfo.both')
+                  : (!user.roomNo && t('alerts.dashboard.missingInfo.room')) ||
+                    (!user.telNo && t('alerts.dashboard.missingInfo.phone'))}
               </u>
               &#41;
             </Alert.Heading>
-            Please add this information to{' '}
-            <Link to={`/profile/${user.uid}`}> Your Profile</Link> <b>before</b>{' '}
-            creating any orders if required.
+            {t('alerts.dashboard.missingInfo.prefix')}{' '}
+            <Link to={`/profile/${user.uid}`}>
+              {' '}
+              {t('alerts.dashboard.missingInfo.link')}
+            </Link>{' '}
+            <b>{t('alerts.dashboard.missingInfo.before')}</b>{' '}
+            {t('alerts.dashboard.missingInfo.suffix')}
           </Alert>
         </Container>
       )}

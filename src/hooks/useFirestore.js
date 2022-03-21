@@ -24,15 +24,13 @@ export const useFirestore = (collection) => {
           type: 'ERROR',
           payload: 'A budget with this code already exists.',
         });
-        return null;
+        throw new Error('A budget with this code already exists.');
       }
     }
     try {
-      const createdAt = timestamp.fromDate(new Date());
-
       const payload = await ref.add({
         ...doc,
-        createdAt,
+        createdAt: timestamp.fromDate(new Date()),
       });
       dispatchIfNotCancelled({
         type: 'ADDED_DOCUMENT',
@@ -43,6 +41,7 @@ export const useFirestore = (collection) => {
         type: 'ERROR',
         payload: err.message,
       });
+      throw new Error('There was an error!');
     }
   };
 
@@ -55,6 +54,7 @@ export const useFirestore = (collection) => {
       });
     } catch (err) {
       dispatchIfNotCancelled({ type: 'ERROR', payload: err.message });
+      throw new Error(err.message);
     }
   };
 
@@ -70,7 +70,7 @@ export const useFirestore = (collection) => {
       return updateDocument;
     } catch (err) {
       dispatchIfNotCancelled({ type: 'ERROR', payload: err.message });
-      return null;
+      throw new Error(err.message);
     }
   };
 

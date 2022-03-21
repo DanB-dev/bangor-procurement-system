@@ -1,4 +1,18 @@
 {
+	"alerts": {
+		"dashboard": {
+			"missingInfo": {
+				"before": "before",
+				"both": "A Telephone Number, and a Room Number",
+				"header": "Looks like your profile is missing some key information.",
+				"link": "Your Profile",
+				"phone": "A Telephone Number",
+				"prefix": "Please add this information to",
+				"room": "A Room Number",
+				"suffix": "creating any orders if required."
+			}
+		}
+	},
 	"customNavbar": {
 		"brand": "Bangor University Procurement System",
 		"login": "Login",
@@ -8,14 +22,39 @@
 		},
 		"signup": "Sign up"
 	},
+	"false": "False",
+	"order": {
+		"cancel": "Cancel",
+		"created": "Created",
+		"header": "Order {{orderId}} - {{orderAmount}} Items",
+		"recurring": "Recurring",
+		"requestHeader": "Requested Items",
+		"requester": "Requester",
+		"stat": {
+			"approved": "Approved",
+			"orderPlaced": "Order Placed",
+			"unknown": "Unknown"
+		},
+		"status": "Status",
+		"table": {
+			"cost": "Cost",
+			"description": "Description",
+			"name": "Name",
+			"quantity": "Quantity",
+			"totalCost": "Total Cost"
+		},
+		"total": "Total"
+	},
 	"sidebar": {
 		"footer": "Copyright © (Insert Name Here)",
 		"links": {
 			"budgets": "Budgets",
 			"dashboard": "Dashboard",
 			"newOrder": "New Order",
-			"orders": "Orders"
+			"orders": "Orders",
+			"users": "Users"
 		},
 		"title": "Hey {{displayName}}"
-	}
+	},
+	"true": "True"
 }

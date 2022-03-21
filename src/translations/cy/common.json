@@ -1,4 +1,18 @@
 {
+	"alerts": {
+		"dashboard": {
+			"missingInfo": {
+				"before": "cyn",
+				"both": "Rhif Ffôn, a Rhif Ystafell",
+				"header": "Mae'n ymddangos bod rhywfaint o wybodaeth allweddol ar goll yn eich proffil.",
+				"link": "Eich Proffil",
+				"phone": "Rhif Ffôn",
+				"prefix": "Ychwanegwch y wybodaeth hon yn",
+				"room": "Rhif Ystafell",
+				"suffix": "creu unrhyw archebion os oes angen."
+			}
+		}
+	},
 	"customNavbar": {
 		"brand": "System Gaffael Prifysgol Bangor",
 		"login": "Mewngofnodi",
@@ -8,14 +22,39 @@
 		},
 		"signup": "Cofrestrwch"
 	},
+	"false": "Na",
+	"order": {
+		"cancel": "Canslo",
+		"created": "Creu",
+		"header": "Archeb {{orderId}} - {{orderAmount}} Eitem",
+		"recurring": "Cylchol",
+		"requestHeader": "Eitemau a archebwyd",
+		"requester": "Ymofynydd",
+		"stat": {
+			"approved": "Cymeradwy",
+			"orderPlaced": "Wedi Ei Gosod",
+			"unknown": "Anhysbys"
+		},
+		"status": "Statws",
+		"table": {
+			"cost": "Cost",
+			"description": "Disgrifiad",
+			"name": "Enw",
+			"quantity": "Nifer",
+			"totalCost": "Cyfanswm y Gost"
+		},
+		"total": "Cyfanswm"
+	},
 	"sidebar": {
 		"footer": "Hawlfraint © (Insert Name Here)",
 		"links": {
 			"budgets": "Cyllidebau",
 			"dashboard": "Dangosfwrdd",
 			"newOrder": "Archeb Newydd",
-			"orders": "Archebion"
+			"orders": "Archebion",
+			"users": "Defnyddwyr"
 		},
 		"title": "Helo {{displayName}}"
-	}
+	},
+	"true": "Ia"
 }

@@ -5,7 +5,8 @@ import * as yup from 'yup';
 export const defaultValues = {
   email: '',
   password: '',
-  avatar: '',
+  passwordConf: '',
+  thumbnail: '',
 };
 
 //This Schema Controls the validation for the form.

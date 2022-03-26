@@ -12,6 +12,7 @@ import { Avatar } from '../../components/avatar/Avatar';
 import { useCollection } from '../../hooks/useCollection';
 import expandMore from '../../assets/expandMore.svg';
 import expandLess from '../../assets/expandLess.svg';
+import { Link } from 'react-router-dom';
 
 const BudgetMain = ({ budget }) => {
   const { documents } = useCollection('events', ['budgetId', '==', budget.id]);
@@ -27,6 +28,7 @@ const BudgetMain = ({ budget }) => {
           by: document.by,
           createdAt: document.createdAt,
           event: document.event,
+          orderId: document.orderId,
         });
       });
       setData(options);
@@ -109,12 +111,30 @@ const BudgetMain = ({ budget }) => {
                         <span className="fw-bold"> {act.holder}</span>
                       </p>
                     )}
+                    {(act.event === 'placed' || act.event === 'cancelled') && (
+                      <p className="ms-2 me-auto">
+                        {act.by.displayName} -{' '}
+                        <span className="text-capitalize">
+                          {act.event} Order
+                        </span>
+                        :{' '}
+                        <Link
+                          to={`/orders/${act.orderId}`}
+                          className="fw-bold btn-link"
+                        >
+                          {act.orderId}
+                        </Link>
+                      </p>
+                    )}
                     <small className="text-muted">
                       {formatDistanceToNow(act.createdAt.toDate(), {
                         addSuffix: true,
                       })}
                     </small>
-                    <Badge className={`${act.by.role} ms-2`} bg="none">
+                    <Badge
+                      className={`${act.by.role.replace(/ /g, '')} ms-2`}
+                      bg="none"
+                    >
                       <span className="text-capitalize">{act.by.role}</span>
                     </Badge>
                   </div>

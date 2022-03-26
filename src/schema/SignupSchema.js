@@ -10,7 +10,7 @@ export const defaultValues = {
 };
 
 //This Schema Controls the validation for the form.
-export const validation = yup.object({
+export const validation = yup.object().shape({
   email: yup.string().required('An email is required.'),
   password: yup
     .string()
@@ -82,5 +82,9 @@ export const fields = [
     placeholder: 'Retype Password',
     text: "Make sure it's unique and secure.",
   },
-  { type: 'file', name: 'thumbnail', label: 'Avatar (Max 500kb)' },
+  {
+    type: 'file',
+    name: 'thumbnail',
+    label: 'Avatar (Max 500kb)',
+  },
 ];

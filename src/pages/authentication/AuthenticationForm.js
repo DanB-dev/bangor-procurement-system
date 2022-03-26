@@ -36,7 +36,7 @@ export const AuthenticationForm = ({
       className={`auth-form ${mode} text-center`}
       onSubmit={handleSubmit(onSubmit)}
     >
-      <h2 className="mb-3">{type == 'signup' ? 'Sign-up' : 'Login'}</h2>
+      <h2 className="mb-3">{type === 'signup' ? 'Sign-up' : 'Login'}</h2>
       {error && <Alert variant={'danger'}>{error}</Alert>}
 
       {fields.map((f) => (
@@ -46,17 +46,19 @@ export const AuthenticationForm = ({
           errors={errors}
           dirtyFields={dirtyFields}
           control={control}
+          showValid="false"
         />
       ))}
+
       <hr />
       {!isPending && (
         <Button variant="outline-primary" className="w-100" type="submit">
-          {type == 'signup' ? 'sign up' : 'login'}
+          {type === 'signup' ? 'Sign Up' : 'Login'}
         </Button>
       )}
       {isPending && (
         <Button variant="outline-primary" className="w-100" disabled>
-          {type == 'signup' ? 'signing up...' : 'logging in...'}
+          {type === 'signup' ? 'signing up...' : 'logging in...'}
         </Button>
       )}
     </Form>

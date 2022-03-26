@@ -10,7 +10,13 @@
   --bg-color: #e4e4e4;
   --bg-color-dark: #333;
 }
-
+html {
+  height: 100%;
+  overflow: auto;
+}
+body {
+  height: 100%;
+}
 /* base styles */
 body {
   font-family: Asap, Poppins, sans-serif;
@@ -64,10 +70,6 @@ ul {
   border-color: var(--primary-color);
 }
 
-th {
-  border-right: 2px solid;
-  border-color: #871825;
-}
 th:first-of-type {
   border-radius: 3px 0 0 0;
 }
@@ -76,7 +78,7 @@ th:last-of-type {
   border-right: none;
 }
 .table > :not(:first-child) {
-  border-top: 2px solid #871825;
+  border-top: 0px;
 }
 .table > tbody {
   vertical-align: middle;
@@ -90,6 +92,14 @@ th:last-of-type {
   margin: 10px 0;
   box-shadow: 3px 3px 2px rgba(0, 0, 0, 0.1);
 }
+
+.btn-group-xs > .btn,
+.btn-xs {
+  padding: 0;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
+}
+
 .bg-primary {
   background-color: var(--primary-color) !important;
 }
@@ -139,14 +149,20 @@ th:last-of-type {
 .badge.member-reply {
   background-color: #3f51b5;
 }
-.badge.admin {
+.badge.Admin {
   background-color: #c40000;
 }
-.badge.tech {
-  background-color: var(--primary-color);
+.badge.User {
+  background-color: #584380;
 }
-.badge.member {
-  background-color: #3f51b5;
+.badge.BudgetHolder {
+  background-color: #0d7999;
+}
+.badge.Finance {
+  background-color: #c96100;
+}
+.badge.ProcurementOfficer {
+  background-color: #03b62f;
 }
 
 /* ===== Scrollbar CSS ===== */
@@ -221,4 +237,15 @@ th:last-of-type {
   display: flex !important;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.page-link {
+  color: #b82234;
+}
+.page-link:hover {
+  color: #de293e;
+}
+.page-link:focus {
+  color: #b82234;
+  box-shadow: 0 0 0 0.25rem rgba(253, 13, 13, 0.25);
 }

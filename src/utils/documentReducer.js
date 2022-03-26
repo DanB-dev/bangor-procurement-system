@@ -10,6 +10,7 @@ export const documentReducer = (state, action) => {
     case 'IS_PENDING':
       return { isPending: true, document: null, success: false, error: null };
     case 'ADDED_DOCUMENT':
+    case 'UPDATED_DOCUMENT':
       return {
         isPending: false,
         document: action.payload,
@@ -24,11 +25,11 @@ export const documentReducer = (state, action) => {
         success: true,
         error: null,
       };
-    case 'UPDATED_DOCUMENT':
+    case 'PASSWORD_RESET':
       return {
         isPending: false,
-        document: action.payload,
-        id: action.payload.id,
+        email: action.payload.email,
+        displayName: action.payload.displayName,
         success: true,
         error: null,
       };

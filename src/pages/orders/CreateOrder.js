@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Button,
@@ -13,18 +13,23 @@ import {
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import Select from 'react-select';
 import { useCollection } from '../../hooks/useCollection';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useFirestore } from '../../hooks/useFirestore';
 import { useAuthContext } from '../../hooks/useAuthContext';
+import { toast } from 'react-toastify';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { validation } from '../../schema/createOrderSchema';
 
 //Creating the default form values. can also be used to reset the form. (Created outside of the component to prevent unnecessary re-renders.)
 const defaultValues = {
   code: '',
   recurring: false,
-  buffer: false,
-  item: [{ name: '', description: '', quantity: '', cost: '' }],
-  total: '',
+  item: [{ name: '', description: '', quantity: '1', cost: '0' }],
+  total: '0',
 };
+
+// error height
+const errorHeight = '70px';
 
 const CreateOrder = () => {
   const {
@@ -32,8 +37,11 @@ const CreateOrder = () => {
   } = useAuthContext();
 
   const { documents, error } = useCollection('budgets'); // Fetches all documents
-  const [addOrder, , , orderResponse] = useFirestore('orders'); // Access the addDocument function in the firestore Hook.
-  const [addEvent, , , eventResponse] = useFirestore('events');
+  const [addOrder, , ,] = useFirestore('orders'); // Access the addDocument function in the firestore Hook.
+  const [addSavedOrder, , ,] = useFirestore('savedOrders'); // Access the addDocument function in the firestore Hook.
+  const [_addEvent, , ,] = useFirestore('events');
+  const addEventReference = useRef(_addEvent);
+  const addEvent = addEventReference.current;
   const [codes, setCodes] = useState([]);
   const history = useHistory();
 
@@ -42,18 +50,21 @@ const CreateOrder = () => {
     handleSubmit,
     getValues,
     setValue,
+    reset,
     formState: { errors, dirtyFields },
     control,
     watch,
   } = useForm({
     defaultValues,
     mode: 'onChange', // This will trigger validation every time an input updates.
+    resolver: yupResolver(validation),
   });
 
+  console.log(errors);
   //Specifying which fields to watch.
   const [item, code] = watch(['item', 'code']); // this is the name of the fields to watch.
 
-  //Setting up dynamic fields for the items.
+  //Setting up dynamic fields for the items. Allows us to have as many fields as the user needs.
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'item',
@@ -66,8 +77,8 @@ const CreateOrder = () => {
       const options = [];
       documents.forEach((o) => {
         options.push({
-          value: { id: o.id, code: o.code, budget: o.budget }, //The document object has all information about the budget, so we limit the data to what we need.
-          label: o.code + ' - ' + o.name, // Give it a nice label
+          value: { id: o.id, code: o.code, name: o.name }, //The document object has all information about the budget, so we limit the data to what we need.
+          label: o.code + ' - ' + o.name, // Give it a nice label.
         });
       });
       setCodes(options);
@@ -79,10 +90,13 @@ const CreateOrder = () => {
   if (code) {
     budget = true;
   }
+
   let total = null;
   if (item) {
-    item.forEach((item) => {
-      total = total + Number(item.cost) * Number(item.quantity);
+    item.forEach((itemw) => {
+      if (itemw.cost && itemw.quantity) {
+        total += Number(itemw.cost) * Number(itemw.quantity);
+      }
     });
 
     setValue('total', total);
@@ -91,67 +105,122 @@ const CreateOrder = () => {
   //Submitting the form (Pre-validated by it's wrapper function.)
   const onSubmit = async ({
     code: {
-      value: { code: budgetCode, id: budgetId },
+      value: { code: budgetCode, id: budgetId, name: budgetName },
     },
     recurring,
     item,
     total,
   }) => {
-    await addOrder({
-      status: 'orderPlaced',
-      budget: {
-        budgetId,
-        budgetCode,
-      },
-      recurring,
-      items: [...item],
-      total,
-      createdBy: {
-        displayName,
-        photoURL,
-        uid,
-      },
-    });
-  };
-
-  useEffect(() => {
-    const submitter = async () => {
-      if (orderResponse.success) {
-        await addEvent({
-          type: 'order',
-          event: 'placed',
-          by: { displayName, uid, photoURL, role },
-          orderId: orderResponse.id,
-        });
-        history.push('/orders');
+    toast.promise(
+      //Wrapping the addOrder in a promise. Let's us show the user the status of the request
+      addOrder({
+        status: 'orderPlaced',
+        budget: {
+          budgetId,
+          budgetCode,
+          budgetName,
+        },
+        items: [...item],
+        total,
+        createdBy: {
+          displayName,
+          photoURL,
+          uid,
+        },
+      }),
+      {
+        pending: {
+          render() {
+            return 'Creating Order...';
+          },
+        },
+        success: {
+          //If successful, also generate an event log.
+          render({ data }) {
+            toast.promise(
+              //Again wrapping in a promise to keep track of the status.
+              addEvent({
+                type: 'order',
+                event: 'placed',
+                by: { displayName, uid, photoURL, role },
+                orderId: data.payload,
+                budgetId: data.doc.budget.budgetId,
+              }),
+              {
+                pending: {
+                  render() {
+                    return 'Logging Order...';
+                  },
+                },
+                success: {
+                  type: 'info',
+                  render() {
+                    history.push('/orders');
+                    return 'Order Logged.';
+                  },
+                },
+                error: {
+                  render({ data }) {
+                    return 'Logging:' + data;
+                  },
+                },
+              }
+            );
+            return 'Order Created!';
+          },
+        },
+        error: {
+          render({ data }) {
+            return 'Placing:' + data;
+          },
+        },
       }
-    };
-    submitter();
-  }, [
-    orderResponse.success,
-    addEvent,
-    displayName,
-    history,
-    orderResponse.id,
-    photoURL,
-    role,
-    uid,
-  ]);
+    );
+    if (recurring) {
+      toast.promise(
+        addSavedOrder({
+          budget: {
+            budgetId,
+            budgetCode,
+            budgetName,
+          },
+          items: [...item],
+          total,
+          createdBy: {
+            displayName,
+            photoURL,
+            uid,
+          },
+        }),
+        {
+          pending: {
+            render() {
+              return 'Saving...';
+            },
+          },
+          success: {
+            render() {
+              return 'Saved Order!';
+            },
+          },
+          error: {
+            render({ data }) {
+              return 'Saving -' + data;
+            },
+          },
+        }
+      );
+    }
+  };
 
   return (
     <Container fluid>
-      {orderResponse.error && (
-        <Alert variant="danger">{orderResponse.error}</Alert>
-      )}
-      {eventResponse.error && (
-        <Alert variant="danger">{eventResponse.error}</Alert>
-      )}
       {error && <Alert variant="danger">{error}</Alert>}
-
       <Card>
         <Card.Header className="text-center bg-primary text-white" as="h5">
           Create Order
         </Card.Header>
+
         <Card.Body>
           <Form onSubmit={handleSubmit(onSubmit)}>
             <Row>
@@ -190,15 +259,15 @@ const CreateOrder = () => {
                     control={control}
                     render={({ field }) => (
                       <Form.Switch
-                        label="Recurring Order?"
+                        label="Save Order?"
                         {...field}
                         disabled={!budget}
                       />
                     )}
                   />
                   <small className="text-muted">
-                    Recurring orders will be available for re-order from the
-                    budget panel or from your order history.
+                    Saved orders will be available for re-order on the{' '}
+                    <Link to="/savedOrders">Saved Orders Panel</Link>
                   </small>
                 </Form.Group>
               </Col>
@@ -217,142 +286,178 @@ const CreateOrder = () => {
               style={{ maxHeight: '400px', overflowY: 'scroll' }}
             >
               <Col lg={2}>
-                <Form.Group className="mb-3 d-flex h-100 pb-2">
+                <Form.Group
+                  className="mb-3 d-flex h-100 pb-2"
+                  style={{ justifyContent: 'flex-start' }}
+                >
                   <Form.Label>Item Name</Form.Label>
-                  {errors.name ? (
-                    <Form.Text style={{ color: '#dc3545' }}>
-                      You need to enter something here.
-                    </Form.Text>
-                  ) : (
-                    <Form.Text className="text-muted">Name as sold.</Form.Text>
-                  )}
+
+                  <Form.Text className="text-muted">Name as sold.</Form.Text>
 
                   {fields.map((field, index) => (
-                    <Controller
-                      key={field.ikey}
-                      name={`item.${index}.name`}
-                      control={control}
-                      rules={{ required: true }}
-                      render={({ field }) => (
-                        <Form.Control
-                          {...field}
-                          placeholder="Item Name..."
-                          autoComplete="off"
-                          disabled={!budget}
-                        />
-                      )}
-                    />
-                  ))}
-                </Form.Group>
-              </Col>
-              <Col lg={5}>
-                <Form.Group className="mb-3 d-flex h-100 pb-2">
-                  <Form.Label>Description</Form.Label>
-
-                  {errors.description ? (
-                    <Form.Text style={{ color: '#dc3545' }}>
-                      You need to enter something here.
-                    </Form.Text>
-                  ) : (
-                    <Form.Text className="text-muted">
-                      A description of the item.
-                    </Form.Text>
-                  )}
-                  {fields.map((field, index) => (
-                    <Controller
-                      key={field.ikey}
-                      name={`item[${index}].description`}
-                      control={control}
-                      rules={{ required: true }}
-                      render={({ field }) => (
-                        <Form.Control
-                          {...field}
-                          placeholder="Item description..."
-                          autoComplete="off"
-                          disabled={!budget}
-                        />
-                      )}
-                    />
-                  ))}
-                </Form.Group>
-              </Col>
-              <Col lg={2}>
-                <Form.Group className="mb-3 d-flex h-100 pb-2">
-                  <Form.Label>Quantity</Form.Label>
-
-                  {errors.item?.quantity ? (
-                    <Form.Text style={{ color: '#dc3545' }}>
-                      Must be at least 1
-                    </Form.Text>
-                  ) : (
-                    <Form.Text className="text-muted">
-                      Qauntity to order.
-                    </Form.Text>
-                  )}
-                  {fields.map((field, index) => (
-                    <Controller
-                      key={field.ikey}
-                      name={`item.${index}.quantity`}
-                      control={control}
-                      rules={{ required: true, min: 1 }}
-                      render={({ field }) => (
-                        <Form.Control
-                          {...field}
-                          type="number"
-                          placeholder="Quantity"
-                          autoComplete="off"
-                          min={1}
-                          disabled={!budget}
-                        />
-                      )}
-                    />
-                  ))}
-                </Form.Group>
-              </Col>
-              <Col lg={3}>
-                <Form.Group className="mb-3 d-flex h-100 pb-2">
-                  <Form.Label>Est. Cost</Form.Label>
-
-                  {errors.cost ? (
-                    <Form.Text style={{ color: '#dc3545' }}>
-                      {errors.cost?.type === 'required' && 'This is required.'}
-                      {errors.cost?.type === 'max' &&
-                        'The Est. Cost cannot be more than the remaining value of the budget'}
-                      {errors.cost?.type === 'min' &&
-                        'You have to set a minimum of £1 for a budget'}
-                    </Form.Text>
-                  ) : (
-                    <Form.Text className="text-muted">
-                      The estimated cost.
-                    </Form.Text>
-                  )}
-                  {fields.map((field, index) => (
-                    <InputGroup key={field.ikey}>
-                      <InputGroup.Text>£</InputGroup.Text>
+                    <div
+                      className="mb-1"
+                      style={{
+                        height: errors?.item?.[index] ? errorHeight : 'initial',
+                      }}
+                    >
                       <Controller
-                        name={`item.${index}.cost`}
+                        key={field.ikey}
+                        name={`item.${index}.name`}
                         control={control}
-                        rules={{
-                          required: true,
-                          min: 1,
-                        }}
+                        rules={{ required: true }}
                         render={({ field }) => (
                           <Form.Control
                             {...field}
-                            type="number"
+                            isInvalid={errors?.item?.[index]?.name}
+                            placeholder="Item Name..."
+                            autoComplete="off"
+                            errors={errors}
                             disabled={!budget}
                           />
                         )}
                       />
+                      {errors?.item?.[index]?.name && (
+                        <Form.Text style={{ color: '#dc3545' }}>
+                          {errors?.item?.[index]?.name.message}
+                        </Form.Text>
+                      )}
+                    </div>
+                  ))}
+                </Form.Group>
+              </Col>
 
-                      <Button
-                        disabled={index === 0 ? true : false}
-                        variant="outline-primary"
-                        onClick={() => (index === 0 ? null : remove(index))}
-                      >
-                        Delete Row
-                      </Button>
-                    </InputGroup>
+              <Col lg={5}>
+                <Form.Group
+                  className="mb-3 d-flex h-100 pb-2"
+                  style={{ justifyContent: 'flex-start' }}
+                >
+                  <Form.Label>Description</Form.Label>
+                  <Form.Text className="text-muted">
+                    A description of the item.
+                  </Form.Text>
+
+                  {fields.map((field, index) => (
+                    <div
+                      className="mb-1"
+                      style={{
+                        height: errors?.item?.[index] ? errorHeight : 'initial',
+                      }}
+                    >
+                      <Controller
+                        key={field.ikey}
+                        name={`item[${index}].description`}
+                        control={control}
+                        rules={{ required: true }}
+                        render={({ field }) => (
+                          <Form.Control
+                            {...field}
+                            isInvalid={errors?.item?.[index]?.description}
+                            placeholder="Item description..."
+                            autoComplete="off"
+                            errors={errors}
+                            disabled={!budget}
+                          />
+                        )}
+                      />
+                      {errors?.item?.[index]?.description && (
+                        <Form.Text style={{ color: '#dc3545' }}>
+                          {errors?.item?.[index]?.description.message}
+                        </Form.Text>
+                      )}
+                    </div>
+                  ))}
+                </Form.Group>
+              </Col>
+              <Col lg={2}>
+                <Form.Group
+                  className="mb-3 d-flex h-100 pb-2"
+                  style={{ justifyContent: 'flex-start' }}
+                >
+                  <Form.Label>Quantity</Form.Label>
+                  <Form.Text className="text-muted">
+                    Quantity to order.
+                  </Form.Text>
+
+                  {fields.map((field, index) => (
+                    <div
+                      className="mb-1"
+                      style={{
+                        height: errors?.item?.[index] ? errorHeight : 'initial',
+                      }}
+                    >
+                      <Controller
+                        key={field.ikey}
+                        name={`item.${index}.quantity`}
+                        control={control}
+                        render={({ field }) => (
+                          <Form.Control
+                            {...field}
+                            isInvalid={errors?.item?.[index]?.quantity}
+                            type="number"
+                            placeholder="Quantity"
+                            autoComplete="off"
+                            min={1}
+                            disabled={!budget}
+                          />
+                        )}
+                      />
+                      {errors?.item?.[index]?.quantity && (
+                        <Form.Text style={{ color: '#dc3545' }}>
+                          {errors?.item?.[index]?.quantity.message}
+                        </Form.Text>
+                      )}
+                    </div>
+                  ))}
+                </Form.Group>
+              </Col>
+              <Col lg={3}>
+                <Form.Group
+                  className="mb-3 d-flex h-100 pb-2"
+                  style={{ justifyContent: 'flex-start' }}
+                >
+                  <Form.Label>Est. Cost</Form.Label>
+
+                  <Form.Text className="text-muted">
+                    The estimated cost per item.
+                  </Form.Text>
+
+                  {fields.map((field, index) => (
+                    <div
+                      className="mb-1"
+                      style={{
+                        height: errors?.item?.[index] ? errorHeight : 'initial',
+                      }}
+                    >
+                      <InputGroup key={field.ikey}>
+                        <InputGroup.Text>£</InputGroup.Text>
+                        <Controller
+                          name={`item.${index}.cost`}
+                          control={control}
+                          render={({ field }) => (
+                            <Form.Control
+                              {...field}
+                              isInvalid={errors?.item?.[index]?.cost}
+                              type="number"
+                              disabled={!budget}
+                            />
+                          )}
+                        />
+
+                        <Button
+                          disabled={index === 0 ? true : false}
+                          variant="outline-primary"
+                          onClick={() => (index === 0 ? null : remove(index))}
+                        >
+                          Delete Row
+                        </Button>
+                      </InputGroup>
+                      {errors?.item?.[index]?.cost && (
+                        <Form.Text style={{ color: '#dc3545' }}>
+                          {errors?.item?.[index]?.cost.message}
+                        </Form.Text>
+                      )}
+                    </div>
                   ))}
                 </Form.Group>
               </Col>
@@ -362,8 +467,13 @@ const CreateOrder = () => {
               <InputGroup>
                 <InputGroup.Text>£</InputGroup.Text>
                 <Form.Control
-                  value={getValues('total')}
-                  type="number"
+                  value={parseFloat(
+                    getValues('total') ? getValues('total') : 0
+                  ).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                  type="text"
                   disabled
                 />
               </InputGroup>
@@ -376,8 +486,8 @@ const CreateOrder = () => {
                     append({
                       name: '',
                       description: '',
-                      quantity: '',
-                      cost: '',
+                      quantity: '1',
+                      cost: '0',
                     });
                   }}
                 >
@@ -392,6 +502,14 @@ const CreateOrder = () => {
                 disabled={!budget}
               >
                 Submit Order
+              </Button>
+              <Button
+                variant="secondary"
+                className="mt-4 m-auto ms-1"
+                disabled={!budget}
+                onClick={() => reset(defaultValues)}
+              >
+                Clear Form
               </Button>
             </Container>
           </Form>

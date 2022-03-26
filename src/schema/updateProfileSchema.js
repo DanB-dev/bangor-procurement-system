@@ -1,4 +1,4 @@
-// This file controls the behaviour for the Signup Form (Located at '/signup')
+// This file controls the behavior for the Signup Form (Located at '/signup')
 
 import * as yup from 'yup';
 

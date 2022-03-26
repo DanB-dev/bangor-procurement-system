@@ -26,17 +26,22 @@ export const useSignup = () => {
       if (!response) {
         throw new Error('Could not create user');
       }
+      let photoURL;
+      if (thumbnail !== undefined) {
+        const img = await projectStorage
+          .ref(`thumbnails/${response.user.uid}/${thumbnail.name}`)
+          .put(thumbnail);
+        photoURL = await img.ref.getDownloadURL();
+      } else {
+        photoURL =
+          'https://firebasestorage.googleapis.com/v0/b/bangor-procurement-system.appspot.com/o/thumbnails%2Fuser-default.png?alt=media&token=83b10c3b-335e-44b2-931a-03c689fbc217';
+      }
+
       await projectAuth
         .setPersistence(projectPersistence.Auth.Persistence.SESSION)
         .then(() => {
           return projectAuth.signInWithEmailAndPassword(email, password);
         });
-      console.log(thumbnail);
-      const img = await projectStorage
-        .ref(`thumbnails/${response.user.uid}/${thumbnail.name}`)
-        .put(thumbnail);
-
-      const photoURL = await img.ref.getDownloadURL();
 
       await response.user.updateProfile({ displayName, photoURL });
 
@@ -55,6 +60,7 @@ export const useSignup = () => {
       if (!isCancelled) {
         setIsPending(false);
         setError(null);
+        return 'success!';
       }
     } catch (err) {
       if (!isCancelled) {

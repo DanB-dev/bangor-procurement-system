@@ -6,6 +6,10 @@
   height: 100vh;
 }
 
+.btn-link {
+  color: var(--primary-color) !important;
+}
+
 .sorting,
 .sorting_asc,
 .sorting_desc {
@@ -70,4 +74,15 @@
 }
 .auth-form.dark hr {
   border: 1px solid #7b7b7b;
+}
+.hover {
+  border: 2px solid transparent !important;
+}
+.hover:hover {
+  background-color: #d0d0d0 !important;
+  border: 2px solid #b8b8b8 !important;
+  cursor: pointer;
+}
+.pointer:hover {
+  cursor: pointer;
 }

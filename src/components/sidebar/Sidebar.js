@@ -11,6 +11,7 @@ import AddIcon from '../../assets/add_icon.svg';
 import Ticket from '../../assets/ticket.svg';
 import Budget from '../../assets/budget.svg';
 import User from '../../assets/user.svg';
+import Star from '../../assets/star.svg';
 import { Avatar } from '../avatar/Avatar';
 
 export const Sidebar = () => {
@@ -39,10 +40,17 @@ export const Sidebar = () => {
                 <span>{t('sidebar.links.dashboard')}</span>
               </NavLink>
             </li>
+            <hr />
             <li>
               <NavLink to="/orders">
                 <img src={Ticket} alt="add project icon" />
                 <span>{t('sidebar.links.orders')}</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/savedOrders">
+                <img src={Star} alt="add project icon" />
+                <span>Saved {t('sidebar.links.orders')}</span>
               </NavLink>
             </li>
             <li>
@@ -51,6 +59,7 @@ export const Sidebar = () => {
                 <span>{t('sidebar.links.newOrder')}</span>
               </NavLink>
             </li>
+            <hr />
             {user.role === 'Admin' && (
               <>
                 <li>
@@ -70,8 +79,13 @@ export const Sidebar = () => {
           </ul>
         </nav>
       </div>
-      <div style={{ position: 'fixed', bottom: 5, left: 20 }}>
+      <div
+        style={{ position: 'fixed', bottom: 5, left: 20 }}
+        className="text-center"
+      >
         {t('sidebar.footer')}
+        <br />
+        <small>Version: 0.1</small>
       </div>
     </div>
   );

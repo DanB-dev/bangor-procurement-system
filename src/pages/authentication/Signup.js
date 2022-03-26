@@ -8,8 +8,10 @@ import { defaultValues, validation, fields } from '../../schema/SignupSchema';
 export const Signup = () => {
   const { signup, isPending, error } = useSignup();
 
-  const onSubmit = ({ email, password, thumbnail }) => {
+  const onSubmit = ({ email, password }, e) => {
+    let thumbnail = e.target.thumbnail.files[0];
     signup(email, email + '@bangor.ac.uk', password, thumbnail);
+    console.log(thumbnail);
   };
 
   return (

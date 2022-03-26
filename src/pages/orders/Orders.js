@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Card, Col, Container, Row } from 'react-bootstrap';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useCollection } from '../../hooks/useCollection';
+
 import OrderFilter from './OrderFilter';
 import OrderTable from './OrderTable';
 
@@ -10,7 +11,7 @@ const Orders = () => {
 
   const { documents, error } = useCollection(
     'orders',
-    user.role !== 'admin' && ['createdBy.uid', '==', user.uid] //If the user is not an admin, then only fetch orders that match their UID
+    user.role !== 'Admin' && ['createdBy.uid', '==', user.uid] //If the user is not an Admin, then only fetch orders that match their UID
   );
   const [currentFilter, setCurrentFilter] = useState('all');
 
@@ -91,7 +92,7 @@ const Orders = () => {
           <Card>
             <Card.Body>
               <Card.Title className="text-muted">
-                Awaiting Finalisation
+                Awaiting Finalization
               </Card.Title>
               <h3>{awaitingAuth}</h3>
             </Card.Body>

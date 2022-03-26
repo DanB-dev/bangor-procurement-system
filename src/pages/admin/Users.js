@@ -101,7 +101,7 @@ export const Users = () => {
   const columns = React.useMemo(
     () => [
       {
-        Header: 'Displayname',
+        Header: 'Display Name',
         accessor: 'displayName',
       },
       {
@@ -111,7 +111,10 @@ export const Users = () => {
           if (cells[1].value === null)
             return <div className="text-muted">No Role Applied</div>;
           return (
-            <Badge className={`${cells[1].value} ms-2`} bg="none">
+            <Badge
+              className={`${cells[1].value.replace(/ /g, '')} ms-2`}
+              bg="none"
+            >
               <span className="text-capitalize">{cells[1].value}</span>
             </Badge>
           );
@@ -141,7 +144,13 @@ export const Users = () => {
             case '':
               return <div className="text-muted">No Number Set</div>;
             default:
-              return cells[3].value;
+              return ` ${
+                cells[3].value.substring(0, 5) +
+                '-' +
+                cells[3].value.substring(5, 8) +
+                '-' +
+                cells[3].value.substring(8, cells[3].value.length)
+              }`;
           }
         },
       },
@@ -166,7 +175,7 @@ export const Users = () => {
                 className="ms-1"
                 variant="primary"
                 onClick={() => {
-                  setShow('true');
+                  setShow(true);
                   setEmail(allCells[0].value);
                 }}
               >
@@ -197,7 +206,7 @@ export const Users = () => {
         <Modal.Body>
           This will log the user out of all devices, and force the user to
           create a new password. A link will be sent to them via their
-          registered email. {email}
+          registered email.
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

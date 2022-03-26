@@ -39,12 +39,16 @@ export const CustomNavbar = () => {
             style={{ maxHeight: '100px' }}
             navbarScroll
           />
-          <Button variant="link" onClick={() => i18n.changeLanguage('cy')}>
-            Wefan Cymraeg
-          </Button>
-          <Button variant="link" onClick={() => i18n.changeLanguage('en')}>
-            English Site
-          </Button>
+          {i18n.language === 'cy' ? (
+            <Button variant="link" onClick={() => i18n.changeLanguage('en')}>
+              English
+            </Button>
+          ) : (
+            <Button variant="link" onClick={() => i18n.changeLanguage('cy')}>
+              Cymraeg
+            </Button>
+          )}
+
           {user && (
             <>
               {!isPending && (

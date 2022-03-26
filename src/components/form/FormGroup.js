@@ -20,6 +20,7 @@ export const FormGroup = ({
   text,
   autoComplete,
   disabled,
+  showValid,
 }) => {
   return (
     <Form.Group className="mb-3">
@@ -63,7 +64,9 @@ export const FormGroup = ({
                     placeholder={placeholder}
                     autoComplete={autoComplete || 'off'}
                     isInvalid={errors[name]}
-                    isValid={dirtyFields[name] && !errors[name]}
+                    isValid={
+                      showValid === 'true' && dirtyFields[name] && !errors[name]
+                    }
                   />
                 );
             }

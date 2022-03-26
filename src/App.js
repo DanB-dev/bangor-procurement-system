@@ -10,12 +10,12 @@ import { useTheme } from './hooks/useTheme';
 import { CustomNavbar } from './components/navbar/CustomNavbar';
 import { Sidebar } from './components/sidebar/Sidebar';
 import { Container } from 'react-bootstrap';
+import { ToastContainer } from 'react-toastify';
 
 //Pages
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { Login } from './pages/authentication/Login';
 import { Signup } from './pages/authentication/Signup';
-import { Project } from './pages/project/Project';
 import Budget from './pages/budget/Budget';
 import Budgets from './pages/budget/Budgets';
 import Profile from './pages/profile/Profile';
@@ -24,6 +24,11 @@ import Orders from './pages/orders/Orders';
 
 //Styles
 import './App.css';
+import Order from './pages/orders/Order';
+import 'react-toastify/dist/ReactToastify.css';
+import { Users } from './pages/admin/Users';
+import { SavedOrders } from './pages/orders/savedOrders/SavedOrders';
+import EditSavedOrder from './pages/orders/savedOrders/EditSavedOrder';
 
 function App() {
   const { mode } = useTheme();
@@ -39,6 +44,7 @@ function App() {
               style={{ maxHeight: '100vh', overflowY: 'scroll' }}
             >
               <CustomNavbar />
+              <ToastContainer />
               <Switch>
                 {/* Generic Routes */}
                 <Route exact path="/">
@@ -56,19 +62,28 @@ function App() {
 
                 {/* Orders */}
                 <Route path="/orders/:id">
-                  {user ? <Project /> : <Redirect to="/login" />}
+                  {user ? <Order /> : <Redirect to="/login" />}
                 </Route>
                 <Route exact path="/orders">
                   {user ? <Orders /> : <Redirect to="/login" />}
                 </Route>
-                <Route path="/createOrder">
+                <Route exact path="/createOrder">
                   {user ? <CreateOrder /> : <Redirect to="/login" />}
+                </Route>
+                <Route exact path="/editSavedOrder/:id">
+                  {user ? <EditSavedOrder /> : <Redirect to="/login" />}
+                </Route>
+                <Route exact path="/editSavedOrder/">
+                  {user ? <EditSavedOrder /> : <Redirect to="/login" />}
+                </Route>
+                <Route path="/savedOrders">
+                  {user ? <SavedOrders /> : <Redirect to="/login" />}
                 </Route>
 
                 {/* Budgets */}
                 <Route exact path="/budgets">
                   {user ? (
-                    user.role === 'admin' ? (
+                    user.role === 'Admin' ? (
                       <Budgets />
                     ) : (
                       <Redirect to="/" />
@@ -80,8 +95,21 @@ function App() {
 
                 <Route path="/budgets/:id">
                   {user ? (
-                    user.role === 'admin' ? (
+                    user.role === 'Admin' ? (
                       <Budget />
+                    ) : (
+                      <Redirect to="/" />
+                    )
+                  ) : (
+                    <Redirect to="/login" />
+                  )}
+                </Route>
+
+                {/* Admin */}
+                <Route exact path="/users">
+                  {user ? (
+                    user.role === 'Admin' ? (
+                      <Users />
                     ) : (
                       <Redirect to="/" />
                     )

@@ -13,12 +13,13 @@ import {
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import Select from 'react-select';
 import { useCollection } from '../../hooks/useCollection';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import { useFirestore } from '../../hooks/useFirestore';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { toast } from 'react-toastify';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { validation } from '../../schema/createOrderSchema';
+import { useDocument } from '../../hooks/useDocument';
 
 //Creating the default form values. can also be used to reset the form. (Created outside of the component to prevent unnecessary re-renders.)
 const defaultValues = {
@@ -28,7 +29,7 @@ const defaultValues = {
   total: '0',
 };
 
-// error height
+// Error height
 const errorHeight = '70px';
 
 const CreateOrder = () => {
@@ -44,6 +45,9 @@ const CreateOrder = () => {
   const addEvent = addEventReference.current;
   const [codes, setCodes] = useState([]);
   const history = useHistory();
+  const { id } = useParams();
+
+  const { document } = useDocument('savedOrders', id);
 
   //Fetching all the functions we'll need to control the form.
   const {
@@ -60,7 +64,24 @@ const CreateOrder = () => {
     resolver: yupResolver(validation),
   });
 
-  console.log(errors);
+  useEffect(() => {
+    if (document !== null) {
+      reset({
+        code: {
+          value: {
+            code: document.budget.budgetCode,
+            id: document.budget.budgetId,
+            name: document.budget.budgetName,
+          },
+          label:
+            document.budget.budgetCode + ' - ' + document.budget.budgetName,
+        },
+        recurring: true,
+        item: document.items,
+      });
+    }
+  }, [document, reset]);
+
   //Specifying which fields to watch.
   const [item, code] = watch(['item', 'code']); // this is the name of the fields to watch.
 
@@ -91,6 +112,7 @@ const CreateOrder = () => {
     budget = true;
   }
 
+  // Getting the totals for each item and appending them to the order total.
   let total = null;
   if (item) {
     item.forEach((itemw) => {
@@ -98,7 +120,6 @@ const CreateOrder = () => {
         total += Number(itemw.cost) * Number(itemw.quantity);
       }
     });
-
     setValue('total', total);
   }
 
@@ -176,6 +197,8 @@ const CreateOrder = () => {
         },
       }
     );
+
+    // If the user wants to save the order, then we save it separately.
     if (recurring) {
       toast.promise(
         addSavedOrder({
@@ -218,7 +241,7 @@ const CreateOrder = () => {
       {error && <Alert variant="danger">{error}</Alert>}
       <Card>
         <Card.Header className="text-center bg-primary text-white" as="h5">
-          Create Order
+          {document === null ? 'Create Order' : 'Edit Saved Order'}
         </Card.Header>
 
         <Card.Body>
@@ -253,23 +276,25 @@ const CreateOrder = () => {
                 </Form.Group>
               </Col>
               <Col className="border-start">
-                <Form.Group className="mb-3">
-                  <Controller
-                    name="recurring"
-                    control={control}
-                    render={({ field }) => (
-                      <Form.Switch
-                        label="Save Order?"
-                        {...field}
-                        disabled={!budget}
-                      />
-                    )}
-                  />
-                  <small className="text-muted">
-                    Saved orders will be available for re-order on the{' '}
-                    <Link to="/savedOrders">Saved Orders Panel</Link>
-                  </small>
-                </Form.Group>
+                {document === null && (
+                  <Form.Group className="mb-3">
+                    <Controller
+                      name="recurring"
+                      control={control}
+                      render={({ field }) => (
+                        <Form.Switch
+                          label="Save Order?"
+                          {...field}
+                          disabled={!budget}
+                        />
+                      )}
+                    />
+                    <small className="text-muted">
+                      Saved orders will be available for re-order on the{' '}
+                      <Link to="/savedOrders">Saved Orders Panel</Link>
+                    </small>
+                  </Form.Group>
+                )}
               </Col>
             </Row>
             <hr />
@@ -291,18 +316,17 @@ const CreateOrder = () => {
                   style={{ justifyContent: 'flex-start' }}
                 >
                   <Form.Label>Item Name</Form.Label>
-
                   <Form.Text className="text-muted">Name as sold.</Form.Text>
 
                   {fields.map((field, index) => (
                     <div
+                      key={field.ikey}
                       className="mb-1"
                       style={{
                         height: errors?.item?.[index] ? errorHeight : 'initial',
                       }}
                     >
                       <Controller
-                        key={field.ikey}
                         name={`item.${index}.name`}
                         control={control}
                         rules={{ required: true }}
@@ -501,7 +525,7 @@ const CreateOrder = () => {
                 type="submit"
                 disabled={!budget}
               >
-                Submit Order
+                {document === null ? 'Submit Order' : 'Save Order'}
               </Button>
               <Button
                 variant="secondary"

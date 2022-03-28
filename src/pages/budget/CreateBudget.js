@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 //Form Requirements
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   defaultValues,
@@ -19,6 +19,7 @@ import { useAuthContext } from '../../hooks/useAuthContext';
 import { Alert, Button, Card, Form } from 'react-bootstrap';
 import { FormGroup } from '../../components/form/FormGroup';
 import { toast } from 'react-toastify';
+import Select from 'react-select';
 
 const CreateBudget = () => {
   const { documents, error } = useCollection('users');
@@ -26,6 +27,7 @@ const CreateBudget = () => {
   const [_addEvent, , ,] = useFirestore('events');
   const addEventReference = useRef(_addEvent);
   const addEvent = addEventReference.current;
+  const [options, setOptions] = useState(null);
 
   const {
     user: { displayName, photoURL, uid, role },
@@ -50,9 +52,10 @@ const CreateBudget = () => {
     if (documents) {
       const options = [];
       documents.forEach((u) => {
-        options.push({ value: u, label: u.displayName });
+        if (u.role === 'Budget Holder' || u.role === 'Admin')
+          options.push({ value: u, label: u.displayName + ' - ' + u.role });
       });
-      fields.find((e) => e['type'] === 'select').options = options;
+      setOptions(options);
     }
   }, [documents]);
 
@@ -166,6 +169,18 @@ const CreateBudget = () => {
               control={control}
             />
           ))}
+          {/* Rendering this manually to allow us to dynamically update the options.  */}
+          <Form.Group className="mb-3">
+            <Form.Label>Budget Holder(s)</Form.Label>
+            <Controller
+              control={control}
+              name="holders"
+              render={({ field }) => (
+                <Select {...field} isMulti options={options} />
+              )}
+            />
+          </Form.Group>
+
           {!isPending && (
             <Button variant="outline-primary" className="w-100" type="submit">
               Create Budget

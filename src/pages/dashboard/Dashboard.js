@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import './Dashboard.css';
 import { Container, Alert } from 'react-bootstrap';
 
-export const Dashboard = () => {
+const Dashboard = () => {
   const { t } = useTranslation('common');
   const { user } = useAuthContext();
   const error = '';
@@ -41,3 +41,4 @@ export const Dashboard = () => {
     </div>
   );
 };
+export default Dashboard;

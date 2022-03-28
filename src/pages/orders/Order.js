@@ -13,12 +13,40 @@ import {
 } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { useDocument } from '../../hooks/useDocument';
+import { useCollection } from '../../hooks/useCollection';
+
+import ActivityTracker from '../../components/Activity/ActivityTracker';
+import { useAuthContext } from '../../hooks/useAuthContext';
 
 const Order = ({ orderId }) => {
+  const { user } = useAuthContext();
   const { id } = useParams();
   const { t } = useTranslation('common');
-  const [data, setData] = useState([]);
+  const [items, setItems] = useState([]);
+  const [activity, setActivity] = useState([]);
+  const { documents } = useCollection('events', [
+    'orderId',
+    '==',
+    orderId ? orderId : id,
+  ]);
   const { document, error } = useDocument('orders', orderId ? orderId : id);
+
+  useEffect(() => {
+    if (documents) {
+      const options = [];
+      documents.forEach((document) => {
+        options.push({
+          uid: document.id,
+          holder: document.holder,
+          by: document.by,
+          createdAt: document.createdAt,
+          event: document.event,
+          orderId: document.orderId,
+        });
+      });
+      setActivity(options);
+    }
+  }, [setActivity, documents]);
 
   useEffect(() => {
     if (document) {
@@ -31,7 +59,7 @@ const Order = ({ orderId }) => {
           cost,
         });
       });
-      setData(options);
+      setItems(options);
     }
   }, [document]);
 
@@ -60,9 +88,11 @@ const Order = ({ orderId }) => {
           orderId: document.id,
           orderAmount: document.items.length,
         })}
-        <Button className="ms-1" size="sm">
-          {t('order.cancel')}?
-        </Button>
+        {(document.createdBy.uid === user.uid || user.role === 'Admin') && (
+          <Button className="ms-3" size="sm">
+            {t('order.cancel')}
+          </Button>
+        )}
       </h3>
       <hr />
       <Row>
@@ -80,7 +110,7 @@ const Order = ({ orderId }) => {
               </tr>
             </thead>
             <tbody>
-              {data.map(({ name, description, quantity, cost }, i) => (
+              {items.map(({ name, description, quantity, cost }, i) => (
                 <tr key={i + name}>
                   <td>{i + 1}</td>
                   <td>{name}</td>
@@ -141,6 +171,8 @@ const Order = ({ orderId }) => {
           </Table>
         </Col>
       </Row>
+
+      <ActivityTracker activity={activity} />
     </Container>
   );
 };

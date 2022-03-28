@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 import { useFirestore } from '../../../hooks/useFirestore';
 import SavedOrder from '../../../assets/save_order.png';
 
-export const SavedOrders = () => {
+const SavedOrders = () => {
   const { user } = useAuthContext();
   const [show, setShow] = useState(false);
   const [, deleteOrder, ,] = useFirestore('savedOrders');
@@ -123,7 +123,7 @@ export const SavedOrders = () => {
               <Card.Footer className="text-end">
                 <ButtonGroup aria-label="Action Items" className="me-5">
                   <Button>Re-order</Button>
-                  <Button as={Link} to={`editSavedOrder/${order.id}`}>
+                  <Button as={Link} to={`createOrder/${order.id}`}>
                     Edit
                   </Button>
                   <Button
@@ -187,3 +187,4 @@ export const SavedOrders = () => {
     </>
   );
 };
+export default SavedOrders;

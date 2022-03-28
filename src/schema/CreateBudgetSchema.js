@@ -69,11 +69,4 @@ export const fields = [
     label: 'Budget Code',
     placeholder: 'BC-203958',
   },
-  {
-    type: 'select',
-    name: 'holders',
-    label: 'Budget Holder(s)',
-    options: [],
-    isMulti: true,
-  },
 ];

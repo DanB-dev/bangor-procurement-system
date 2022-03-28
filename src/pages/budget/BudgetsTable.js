@@ -2,9 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { TableTemplate } from '../../components/table/TableTemplate';
+import { useAuthContext } from '../../hooks/useAuthContext';
 import { useCollection } from '../../hooks/useCollection';
 
 const BudgetsTable = () => {
+  const {
+    user: { role, uid },
+  } = useAuthContext();
+
   const { documents } = useCollection('budgets');
   const [data, setData] = useState([]);
 
@@ -12,17 +17,24 @@ const BudgetsTable = () => {
     if (documents) {
       const options = [];
       documents.forEach(({ code, name, holders, createdBy, id }) => {
-        options.push({
-          code,
-          name,
-          holders: [
-            ...holders.map(({ displayName }, i) =>
-              holders.length > i + 1 ? displayName + ', ' : displayName
-            ),
-          ],
-          createdBy: createdBy.displayName,
-          id,
-        });
+        if (
+          createdBy.uid === uid ||
+          role === 'Admin' ||
+          role === 'Finance' ||
+          role === 'Requisitions Officer'
+        ) {
+          options.push({
+            code,
+            name,
+            holders: [
+              ...holders.map(({ displayName }, i) =>
+                holders.length > i + 1 ? displayName + ', ' : displayName
+              ),
+            ],
+            createdBy: createdBy.displayName,
+            id,
+          });
+        }
       });
       setData(options);
     }

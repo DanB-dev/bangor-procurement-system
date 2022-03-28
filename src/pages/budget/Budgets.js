@@ -1,9 +1,14 @@
 import { Col, Container, Row } from 'react-bootstrap';
+import { useAuthContext } from '../../hooks/useAuthContext';
 
 import BudgetsTable from './BudgetsTable';
 import CreateBudget from './CreateBudget';
 
 const Budgets = () => {
+  const {
+    user: { role },
+  } = useAuthContext();
+
   return (
     <Container fluid>
       <Row>
@@ -11,9 +16,11 @@ const Budgets = () => {
         <Col>
           <BudgetsTable />
         </Col>
-        <Col sm={12} md={12} lg={4} xl={3}>
-          <CreateBudget />
-        </Col>
+        {role === 'Admin' && (
+          <Col sm={12} md={12} lg={4} xl={3}>
+            <CreateBudget />
+          </Col>
+        )}
       </Row>
     </Container>
   );

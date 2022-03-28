@@ -5,7 +5,7 @@ const filterList = [
   { value: 'all', label: 'All' },
   { value: 'orderPlaced', label: 'Order Placed' },
   { value: 'actionNeeded', label: 'Action Needed' },
-  { value: 'awaitingAuth', label: 'Awaiting Authorisation' },
+  { value: 'awaitingAuth', label: 'Awaiting Authorization' },
   { value: 'ordered', label: 'Order Confirmed' },
   { value: 'shipped', label: 'Shipped' },
   { value: 'complete', label: 'Complete' },

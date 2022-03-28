@@ -5,7 +5,7 @@ import { AuthenticationForm } from './AuthenticationForm';
 import { useSignup } from '../../hooks/useSignup';
 import { defaultValues, validation, fields } from '../../schema/SignupSchema';
 
-export const Signup = () => {
+const Signup = () => {
   const { signup, isPending, error } = useSignup();
 
   const onSubmit = ({ email, password }, e) => {
@@ -26,3 +26,4 @@ export const Signup = () => {
     />
   );
 };
+export default Signup;

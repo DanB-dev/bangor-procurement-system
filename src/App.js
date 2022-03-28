@@ -13,22 +13,21 @@ import { Container } from 'react-bootstrap';
 import { ToastContainer } from 'react-toastify';
 
 //Pages
-import { Dashboard } from './pages/dashboard/Dashboard';
-import { Login } from './pages/authentication/Login';
-import { Signup } from './pages/authentication/Signup';
+import Dashboard from './pages/dashboard/Dashboard';
+import Login from './pages/authentication/Login';
+import Signup from './pages/authentication/Signup';
 import Budget from './pages/budget/Budget';
 import Budgets from './pages/budget/Budgets';
 import Profile from './pages/profile/Profile';
 import CreateOrder from './pages/orders/CreateOrder';
 import Orders from './pages/orders/Orders';
+import SavedOrders from './pages/orders/savedOrders/SavedOrders';
 
 //Styles
 import './App.css';
 import Order from './pages/orders/Order';
 import 'react-toastify/dist/ReactToastify.css';
 import { Users } from './pages/admin/Users';
-import { SavedOrders } from './pages/orders/savedOrders/SavedOrders';
-import EditSavedOrder from './pages/orders/savedOrders/EditSavedOrder';
 
 function App() {
   const { mode } = useTheme();
@@ -70,11 +69,8 @@ function App() {
                 <Route exact path="/createOrder">
                   {user ? <CreateOrder /> : <Redirect to="/login" />}
                 </Route>
-                <Route exact path="/editSavedOrder/:id">
-                  {user ? <EditSavedOrder /> : <Redirect to="/login" />}
-                </Route>
-                <Route exact path="/editSavedOrder/">
-                  {user ? <EditSavedOrder /> : <Redirect to="/login" />}
+                <Route exact path="/createOrder/:id">
+                  {user ? <CreateOrder /> : <Redirect to="/login" />}
                 </Route>
                 <Route path="/savedOrders">
                   {user ? <SavedOrders /> : <Redirect to="/login" />}
@@ -95,7 +91,7 @@ function App() {
 
                 <Route path="/budgets/:id">
                   {user ? (
-                    user.role === 'Admin' ? (
+                    user.role !== 'User' ? (
                       <Budget />
                     ) : (
                       <Redirect to="/" />

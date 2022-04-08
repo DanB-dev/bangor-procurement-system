@@ -1,41 +1,31 @@
-//General
 import { useEffect, useRef, useState } from 'react';
-
-//Form Requirements
+import { Button, Card, Form } from 'react-bootstrap';
 import { Controller, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+import { FormGroup } from '../../components/form/FormGroup';
 import {
   defaultValues,
-  validation,
   fields,
-} from '../../schema/CreateBudgetSchema';
-
-//Custom Hooks
-import { useCollection } from '../../hooks/useCollection';
-import { useFirestore } from '../../hooks/useFirestore';
-import { useAuthContext } from '../../hooks/useAuthContext';
-
-//Components
-import { Alert, Button, Card, Form } from 'react-bootstrap';
-import { FormGroup } from '../../components/form/FormGroup';
+  validation,
+} from '../../schema/CreateSchoolSchema';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { toast } from 'react-toastify';
+import { useAuthContext } from '../../hooks/useAuthContext';
+import { useFirestore } from '../../hooks/useFirestore';
 import Select from 'react-select';
+import { useCollection } from '../../hooks/useCollection';
+import { Alert } from 'bootstrap';
 
-const CreateBudget = () => {
-  const [users, usersError] = useCollection('users');
-  const [schools, schoolError] = useCollection('schools');
-  const [addBudget, , , budgetResponse] = useFirestore('budgets'); // Access the addDocument function in the firestore Hook.
+const CreateSchool = () => {
+  const [documents, error] = useCollection('users');
+  const [isPending, setIsPending] = useState(false);
+  const [addSchool, , , schoolResponse] = useFirestore('schools'); // Access the addDocument function in the firestore Hook.
   const [_addEvent, , ,] = useFirestore('events');
   const addEventReference = useRef(_addEvent);
   const addEvent = addEventReference.current;
-  const [usersOptions, setUsersOptions] = useState(null);
-  const [schoolOptions, setSchoolOptions] = useState(null);
-
+  const [options, setOptions] = useState(null);
   const {
     user: { displayName, photoURL, uid, role },
   } = useAuthContext();
-
-  const [isPending, setIsPending] = useState(false);
 
   // Import the form function from the UseForm Hook.
   const {
@@ -49,35 +39,21 @@ const CreateBudget = () => {
     resolver: yupResolver(validation), // This resolver is used to validate our form values.
   });
 
-  console.log(errors);
-
   // Get all the users that are eligible to be added to the budget.
   useEffect(() => {
-    if (users) {
+    if (documents) {
       const options = [];
-      users.forEach((u) => {
-        if (u.role === 'Budget Holder' || u.role === 'Admin')
+      documents.forEach((u) => {
+        if (u.role === 'School Requisitions Officer' || u.role === 'Admin')
           options.push({ value: u, label: u.displayName + ' - ' + u.role });
       });
-      setUsersOptions(options);
+      setOptions(options);
     }
-  }, [users]);
+  }, [documents]);
 
-  // Get all the schools.
-  useEffect(() => {
-    if (schools) {
-      const options = [];
-      schools.forEach((s) => {
-        options.push({ value: s, label: s.code + ' - ' + s.name });
-      });
-      setSchoolOptions(options);
-    }
-  }, [schools]);
-
-  //Handling form submissions. All errors are handled by the Yup Resolver before this is triggered.
-  const onSubmit = async ({ name, code, holders, school }) => {
+  const onSubmit = async ({ name, code, reqOfficer }) => {
     toast.promise(
-      addBudget(
+      addSchool(
         {
           name,
           code,
@@ -86,20 +62,11 @@ const CreateBudget = () => {
             photoURL,
             uid,
           },
-          school: {
-            code: school.value.code,
-            name: school.value.name,
-            id: school.value.id,
+          reqOfficer: {
+            displayName: reqOfficer.value.displayName,
+            photoURL: reqOfficer.value.photoURL,
+            uid: reqOfficer.value.uid,
           },
-          holders: [
-            ...holders.map(({ value: { displayName, id, photoURL } }) => {
-              return {
-                displayName,
-                photoURL,
-                id,
-              };
-            }),
-          ],
         },
         ['code', '==', code]
       ),
@@ -115,7 +82,7 @@ const CreateBudget = () => {
             setIsPending(false);
             return (
               <div>
-                Budget <span className="fw-bold">{name}</span> Created!
+                School <span className="fw-bold">{name}</span> Created!
               </div>
             );
           },
@@ -132,13 +99,13 @@ const CreateBudget = () => {
   };
 
   useEffect(() => {
-    if (budgetResponse.success) {
+    if (schoolResponse.success) {
       toast.promise(
         addEvent({
-          type: 'budget',
+          type: 'school',
           event: 'created',
           by: { displayName, uid, photoURL, role },
-          budgetId: budgetResponse.id,
+          budgetId: schoolResponse.id,
         }),
         {
           pending: {
@@ -149,7 +116,7 @@ const CreateBudget = () => {
           success: {
             type: 'info',
             render() {
-              return `Logged Creation `;
+              return `Logged Creation`;
             },
           },
           error: {
@@ -165,8 +132,8 @@ const CreateBudget = () => {
     uid,
     photoURL,
     role,
-    budgetResponse.success,
-    budgetResponse.id,
+    schoolResponse.success,
+    schoolResponse.id,
     addEvent,
     reset,
   ]);
@@ -174,12 +141,10 @@ const CreateBudget = () => {
   return (
     <Card>
       <Card.Header className="text-center bg-primary text-white" as="h5">
-        Create a new Budget
+        Create a new School
       </Card.Header>
       <Card.Body>
-        {usersError && <Alert variant={'danger'}>{usersError}</Alert>}
-        {schoolError && <Alert variant={'danger'}>{schoolError}</Alert>}
-
+        {error && <Alert variant={'danger'}>{error}</Alert>}
         <Form onSubmit={handleSubmit(onSubmit)}>
           {fields.map((f) => (
             <FormGroup
@@ -192,34 +157,22 @@ const CreateBudget = () => {
           ))}
           {/* Rendering this manually to allow us to dynamically update the options.  */}
           <Form.Group className="mb-3">
-            <Form.Label>School</Form.Label>
+            <Form.Label>School Requisitions Officer</Form.Label>
             <Controller
               control={control}
-              name="school"
-              render={({ field }) => (
-                <Select {...field} options={schoolOptions} />
-              )}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Budget Holder(s)</Form.Label>
-            <Controller
-              control={control}
-              name="holders"
-              render={({ field }) => (
-                <Select {...field} isMulti options={usersOptions} />
-              )}
+              name="reqOfficer"
+              render={({ field }) => <Select {...field} options={options} />}
             />
           </Form.Group>
 
           {!isPending && (
             <Button variant="outline-primary" className="w-100" type="submit">
-              Create Budget
+              Create School
             </Button>
           )}
           {isPending && (
             <Button variant="outline-primary" className="w-100" disabled>
-              Creating Budget...
+              Creating School...
             </Button>
           )}
         </Form>
@@ -228,4 +181,4 @@ const CreateBudget = () => {
   );
 };
 
-export default CreateBudget;
+export default CreateSchool;

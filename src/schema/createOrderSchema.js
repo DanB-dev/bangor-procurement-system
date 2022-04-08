@@ -1,4 +1,4 @@
-// This file controls the behaviour for the Create Order Form (Located at '/createOrder')
+// This file controls the behavior for the Create Order Form (Located at '/createOrder')
 
 import * as yup from 'yup';
 

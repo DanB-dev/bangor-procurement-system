@@ -6,6 +6,7 @@ import * as yup from 'yup';
 export const defaultValues = {
   name: '',
   code: '',
+  school: '',
   holders: [],
 };
 
@@ -21,6 +22,10 @@ export const validation = yup.object({
       /^[A-Z]{2}[-]\d{6}$/,
       'The format is wrong | example: "RT-596878"'
     ),
+  school: yup.object().shape({
+    label: yup.string().required('A school name is required.'),
+    value: yup.object().required('A school code is required.'),
+  }),
   holders: yup
     .array()
     .required()

@@ -51,11 +51,12 @@ export const useFirestore = (collection) => {
         reject(err.message); // if there was any error reject the promise, notifying the user the email could not be sent.
       }
     });
+
   const deleteDocument = async (id) =>
     new Promise(async (resolve, reject) => {
       dispatch({ type: 'IS_PENDING' });
       if (id === null) {
-        throw new Error('The Id Was null');
+        throw new Error('The Id was null');
       }
       try {
         await ref.doc(id).delete();

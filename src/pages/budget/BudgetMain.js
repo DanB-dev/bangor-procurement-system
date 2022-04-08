@@ -7,13 +7,13 @@ import { useCollection } from '../../hooks/useCollection';
 import ActivityTracker from '../../components/Activity/ActivityTracker';
 
 const BudgetMain = ({ budget }) => {
-  const { documents } = useCollection('events', ['budgetId', '==', budget.id]);
+  const [events] = useCollection('events', ['budgetId', '==', budget.id]);
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    if (documents) {
+    if (events) {
       const options = [];
-      documents.forEach((document) => {
+      events.forEach((document) => {
         options.push({
           uid: document.id,
           holder: document.holder,
@@ -25,7 +25,7 @@ const BudgetMain = ({ budget }) => {
       });
       setData(options);
     }
-  }, [setData, documents]);
+  }, [setData, events]);
 
   return (
     <Container fluid>

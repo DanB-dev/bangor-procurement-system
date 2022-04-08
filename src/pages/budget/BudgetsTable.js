@@ -1,31 +1,32 @@
+// General Imports
 import React, { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { TableTemplate } from '../../components/table/TableTemplate';
+
+//Custom Hooks
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useCollection } from '../../hooks/useCollection';
+
+//Components
+import { TableTemplate } from '../../components/table/TableTemplate';
 
 const BudgetsTable = () => {
   const {
     user: { role, uid },
   } = useAuthContext();
 
-  const { documents } = useCollection('budgets');
+  const [documents] = useCollection('budgets');
   const [data, setData] = useState([]);
 
   useEffect(() => {
     if (documents) {
       const options = [];
-      documents.forEach(({ code, name, holders, createdBy, id }) => {
-        if (
-          createdBy.uid === uid ||
-          role === 'Admin' ||
-          role === 'Finance' ||
-          role === 'Requisitions Officer'
-        ) {
+      documents.forEach(({ code, name, holders, createdBy, id, school }) => {
+        if (createdBy.uid === uid || role !== 'User') {
           options.push({
             code,
             name,
+            school: school.code,
             holders: [
               ...holders.map(({ displayName }, i) =>
                 holders.length > i + 1 ? displayName + ', ' : displayName
@@ -38,12 +39,17 @@ const BudgetsTable = () => {
       });
       setData(options);
     }
-  }, [documents]);
+  }, [documents, role, uid]);
+
   const columns = React.useMemo(
     () => [
       {
         Header: 'Budget Name',
         accessor: 'name',
+      },
+      {
+        Header: 'School',
+        accessor: 'school', // accessor is the "key" in the data
       },
       {
         Header: 'Budget Code',
@@ -68,7 +74,7 @@ const BudgetsTable = () => {
                 size="sm"
                 variant="primary"
                 as={Link}
-                to={`/budgets/${allCells[4].value}`}
+                to={`/budgets/${allCells[5].value}`}
               >
                 View
               </Button>

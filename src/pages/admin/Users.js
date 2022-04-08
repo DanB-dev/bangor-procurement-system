@@ -12,17 +12,23 @@ import { useAuthContext } from '../../hooks/useAuthContext';
 import { useCollection } from '../../hooks/useCollection';
 import { useFirestore } from '../../hooks/useFirestore';
 import { usePasswordReset } from '../../hooks/usePasswordReset';
+import UserFilter from './UserFilter';
 
 export const Users = () => {
   const { user } = useAuthContext();
-  const { documents } = useCollection('users');
+  const [documents] = useCollection('users');
   const { resetPassword } = usePasswordReset();
   const [addEvent, , ,] = useFirestore('events');
   const [data, setData] = useState([]);
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState('');
 
-  //Handles sending the email to the requestee, as well as notifying the user if the request was successful.
+  const [currentFilter, setCurrentFilter] = useState('all');
+  const changeFilter = (newFilter) => {
+    setCurrentFilter(newFilter);
+  };
+
+  //Handles sending the email to the requester, as well as notifying the user if the request was successful.
   const handleResetPassword = (email, displayName) => {
     toast.promise(resetPassword(email, displayName), {
       pending: {
@@ -79,11 +85,29 @@ export const Users = () => {
     setShow(false);
   };
 
+  //Filtering the orders using the current filter.
+  const orders = documents
+    ? documents.filter((document) => {
+        switch (currentFilter) {
+          case 'all':
+            return true;
+          case 'User':
+          case 'Budget Holder':
+          case 'Finance Officer':
+          case 'School Requisitions Officer':
+          case 'Admin':
+            return document.role === currentFilter;
+          default:
+            return false;
+        }
+      })
+    : null; //If there are no documents in that match set to null.
+
   //formatting all users ready for display.
   useEffect(() => {
-    if (documents) {
+    if (orders) {
       const options = [];
-      documents.forEach((document) => {
+      orders.forEach((document) => {
         options.push({
           displayName: document.displayName,
           photoURL: document.photoURL,
@@ -95,7 +119,7 @@ export const Users = () => {
       });
       setData(options);
     }
-  }, [setData, documents]);
+  }, [setData, orders]);
 
   //Configuring our column formatting. useMemo will stop this from being recalculated on each render, and only update when state inside changes.
   const columns = React.useMemo(
@@ -193,10 +217,11 @@ export const Users = () => {
     <>
       <Container fluid>
         <h2 className="page-title mb-2">Users</h2>
+        <UserFilter currentFilter={currentFilter} changeFilter={changeFilter} />
         <TableTemplate
           data={data}
           columns={columns}
-          noDataText="No Budgets Found"
+          noDataText="No Users Found"
         />
       </Container>
       <Modal show={show} onHide={handleClose}>

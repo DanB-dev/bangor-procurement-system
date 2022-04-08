@@ -22,6 +22,7 @@ import Profile from './pages/profile/Profile';
 import CreateOrder from './pages/orders/CreateOrder';
 import Orders from './pages/orders/Orders';
 import SavedOrders from './pages/orders/savedOrders/SavedOrders';
+import Schools from './pages/schools/Schools';
 
 //Styles
 import './App.css';
@@ -90,6 +91,31 @@ function App() {
                 </Route>
 
                 <Route path="/budgets/:id">
+                  {user ? (
+                    user.role !== 'User' ? (
+                      <Budget />
+                    ) : (
+                      <Redirect to="/" />
+                    )
+                  ) : (
+                    <Redirect to="/login" />
+                  )}
+                </Route>
+
+                {/* Schools */}
+                <Route exact path="/schools">
+                  {user ? (
+                    user.role === 'Admin' ? (
+                      <Schools />
+                    ) : (
+                      <Redirect to="/" />
+                    )
+                  ) : (
+                    <Redirect to="/login" />
+                  )}
+                </Route>
+
+                <Route path="/schools/:id">
                   {user ? (
                     user.role !== 'User' ? (
                       <Budget />

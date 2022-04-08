@@ -14,8 +14,11 @@ const roles = {
   options: [
     { value: 'User', label: 'User' },
     { value: 'Budget Holder', label: 'Budget Holder' },
-    { value: 'Finance', label: 'Finance' },
-    { value: 'Procurement Officer', label: 'Procurement Officer' },
+    { value: 'Finance Officer', label: 'Finance Officer' },
+    {
+      value: 'School Requisitions Officer',
+      label: 'School Requisitions Officer',
+    },
     { value: 'Admin', label: 'Admin' },
   ],
 };

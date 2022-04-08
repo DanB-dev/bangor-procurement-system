@@ -158,10 +158,10 @@ th:last-of-type {
 .badge.BudgetHolder {
   background-color: #0d7999;
 }
-.badge.Finance {
+.badge.FinanceOfficer {
   background-color: #c96100;
 }
-.badge.ProcurementOfficer {
+.badge.SchoolRequisitionsOfficer {
   background-color: #03b62f;
 }
 

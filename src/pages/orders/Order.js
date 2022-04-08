@@ -1,22 +1,26 @@
+// General Imports
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
+import { formatCurrency, formatNumber } from '../../utils/formatters';
 
-import React, { useEffect, useState } from 'react';
+// Custom Hooks
+import { useDocument } from '../../hooks/useDocument';
+import { useCollection } from '../../hooks/useCollection';
+import { useAuthContext } from '../../hooks/useAuthContext';
+
+// Styling & Images
+import ActivityTracker from '../../components/Activity/ActivityTracker';
 import {
-  Alert,
   Badge,
   Button,
   Col,
   Container,
   Row,
   Table,
+  Alert,
 } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
-import { useDocument } from '../../hooks/useDocument';
-import { useCollection } from '../../hooks/useCollection';
-
-import ActivityTracker from '../../components/Activity/ActivityTracker';
-import { useAuthContext } from '../../hooks/useAuthContext';
 
 const Order = ({ orderId }) => {
   const { user } = useAuthContext();
@@ -24,11 +28,13 @@ const Order = ({ orderId }) => {
   const { t } = useTranslation('common');
   const [items, setItems] = useState([]);
   const [activity, setActivity] = useState([]);
-  const { documents } = useCollection('events', [
+
+  const [documents] = useCollection('events', [
     'orderId',
     '==',
     orderId ? orderId : id,
   ]);
+
   const { document, error } = useDocument('orders', orderId ? orderId : id);
 
   useEffect(() => {
@@ -82,98 +88,93 @@ const Order = ({ orderId }) => {
   };
 
   return (
-    <Container fluid>
-      <h3>
-        {t('order.header', {
-          orderId: document.id,
-          orderAmount: document.items.length,
-        })}
-        {(document.createdBy.uid === user.uid || user.role === 'Admin') && (
-          <Button className="ms-3" size="sm">
-            {t('order.cancel')}
-          </Button>
-        )}
-      </h3>
-      <hr />
-      <Row>
-        <Col md="9">
-          <h4>{t('order.requestHeader')}</h4>
-          <Table style={{ borderBottom: '1px solid black' }}>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>{t('order.table.name')}</th>
-                <th>{t('order.table.description')}</th>
-                <th>{t('order.table.cost')}</th>
-                <th>{t('order.table.quantity')}</th>
-                <th>{t('order.table.totalCost')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(({ name, description, quantity, cost }, i) => (
-                <tr key={i + name}>
-                  <td>{i + 1}</td>
-                  <td>{name}</td>
-                  <td>{description}</td>
+    <>
+      <Container fluid>
+        <h3>
+          {t('order.header', {
+            orderId: document.id,
+            orderAmount: document.items.length,
+          })}
+          {(document.createdBy.uid === user.uid || user.role === 'Admin') && (
+            <Button className="ms-3" size="sm">
+              {t('order.cancel')}
+            </Button>
+          )}
+        </h3>
+        <Row className="mt-4">
+          <Col md="9">
+            <h4>
+              <u>{t('order.requestHeader')}</u>
+            </h4>
+            <Table style={{ borderBottom: '1px solid black' }}>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>{t('order.table.name')}</th>
+                  <th>{t('order.table.description')}</th>
+                  <th>{t('order.table.cost')}</th>
+                  <th>{t('order.table.quantity')}</th>
+                  <th>{t('order.table.totalCost')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map(({ name, description, quantity, cost }, i) => (
+                  <tr key={name + '_' + i}>
+                    <td>{i + 1}</td>
+                    <td>{name}</td>
+                    <td>{description}</td>
+                    <td>{formatCurrency(cost)}</td>
+                    <td>{formatNumber(quantity)}</td>
+                    <td>{formatCurrency(cost * quantity)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+
+            <p className="text-end fw-bold me-3">
+              {t('order.total')}: {formatCurrency(document.total)}
+            </p>
+          </Col>
+          <Col md="3" style={{ borderLeft: '2px solid grey' }}>
+            <Table className="w-100">
+              <tbody>
+                <tr>
                   <td>
-                    £
-                    {parseFloat(cost).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                    <b>{t('order.created')}:</b>
                   </td>
-                  <td>{parseInt(quantity).toLocaleString(undefined)}</td>
+                  <td>{format(document.createdAt.toDate(), 'MM/dd/yyyy')}</td>
+                </tr>
+                <tr>
                   <td>
-                    £
-                    {parseFloat(cost * quantity).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                    <b>{t('order.requester')}:</b>
+                  </td>
+                  <td>{document.createdBy.displayName}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <b>{t('order.status')}:</b>
+                  </td>
+                  <td>
+                    <Badge bg="secondary">{checkStatus()}</Badge>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
 
-          <p className="text-end fw-bold me-3">
-            {t('order.total')}: £
-            {parseFloat(document.total).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </p>
-        </Col>
-        <Col md="3" style={{ borderLeft: '2px solid grey' }}>
-          <Table className="w-100">
-            <tbody>
-              <tr>
-                <td>
-                  <b>{t('order.created')}:</b>
-                </td>
-
-                <td>{format(document.createdAt.toDate(), 'MM/dd/yyyy')}</td>
-              </tr>
-              <tr>
-                <td>
-                  <b>{t('order.requester')}:</b>
-                </td>
-                <td>{document.createdBy.displayName}</td>
-              </tr>
-              <tr>
-                <td>
-                  <b>{t('order.status')}:</b>
-                </td>
-                <td>
-                  <Badge bg="secondary">{checkStatus()}</Badge>
-                </td>
-              </tr>
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
-
-      <ActivityTracker activity={activity} />
-    </Container>
+        <h6 className={`mt-3`}>Order Actions</h6>
+        {(user.role === 'Admin' || user.role === 'Budget Holder') &&
+          document.status === 'orderPlaced' && (
+            <>
+              <Button variant="success">Accept</Button>
+              <Button variant="danger">Deny</Button>
+            </>
+          )}
+        <hr />
+        <ActivityTracker activity={activity} />
+      </Container>
+    </>
   );
 };
 

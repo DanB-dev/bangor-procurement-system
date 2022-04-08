@@ -1,15 +1,20 @@
+// General Imports
 import React, { useState } from 'react';
-import { Alert, Card, Col, Container, Row } from 'react-bootstrap';
+
+// Custom Hooks
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useCollection } from '../../hooks/useCollection';
 
+// Components
+import { Alert, Card, Col, Container, Row } from 'react-bootstrap';
 import OrderFilter from './OrderFilter';
 import OrderTable from './OrderTable';
+import { useTranslation } from 'react-i18next';
 
 const Orders = () => {
   const { user } = useAuthContext();
-
-  const { documents, error } = useCollection(
+  const { t } = useTranslation('common');
+  const [documents, error] = useCollection(
     'orders',
     user.role !== 'Admin' && ['createdBy.uid', '==', user.uid] //If the user is not an Admin, then only fetch orders that match their UID
   );
@@ -59,47 +64,30 @@ const Orders = () => {
       }).length
     : 0;
 
+  // Defining an Array of our order cards. We can then map through a template for each rather than have each explicitly written.
+  const orderCards = [
+    { title: t('order.orderCard.total'), value: totalOrders },
+    { title: t('order.orderCard.open'), value: openOrders },
+    { title: t('order.orderCard.actionNeeded'), value: actionNeeded },
+    { title: t('order.orderCard.awaitingFinal'), value: awaitingAuth },
+  ];
   return (
     <div>
-      <h2 className="page-title">Orders</h2>
+      <h2 className="page-title">{t('order.orders')}</h2>
       {error && <Alert variant="danger">{error.message}</Alert>}
       <Row>
-        <Col className="d-flex">
-          <Card>
-            <Card.Body>
-              <Card.Title className="text-muted">Your Total Orders</Card.Title>
-              <h3>{totalOrders}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col className="d-flex">
-          <Card>
-            <Card.Body>
-              <Card.Title className="text-muted">Open Orders</Card.Title>
-              <h3>{openOrders}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col className="d-flex">
-          <Card>
-            <Card.Body>
-              <Card.Title className="text-muted">Action Needed</Card.Title>
-              <h3>{actionNeeded}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col className="d-flex">
-          <Card>
-            <Card.Body>
-              <Card.Title className="text-muted">
-                Awaiting Finalization
-              </Card.Title>
-              <h3>{awaitingAuth}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
+        {/* Mapping through the array of order cards here. */}
+        {orderCards.map(({ title, value }) => (
+          <Col className="d-flex">
+            <Card>
+              <Card.Body>
+                <Card.Title className="text-muted">{title}</Card.Title>
+                <h3>{value}</h3>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
       </Row>
-
       <Container>
         <OrderFilter
           currentFilter={currentFilter}

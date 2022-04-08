@@ -1,4 +1,20 @@
+// General Imports
 import React, { useEffect, useRef, useState } from 'react';
+import { formatCurrency } from '../../utils/formatters';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { validation } from '../../schema/createOrderSchema';
+
+// Custom Hooks
+import { useCollection } from '../../hooks/useCollection';
+import { useDocument } from '../../hooks/useDocument';
+import { useFirestore } from '../../hooks/useFirestore';
+import { useAuthContext } from '../../hooks/useAuthContext';
+
+// Components
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import Select from 'react-select';
+import { Link, useHistory, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import {
   Alert,
   Button,
@@ -9,17 +25,6 @@ import {
   InputGroup,
   Row,
 } from 'react-bootstrap';
-
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
-import Select from 'react-select';
-import { useCollection } from '../../hooks/useCollection';
-import { Link, useHistory, useParams } from 'react-router-dom';
-import { useFirestore } from '../../hooks/useFirestore';
-import { useAuthContext } from '../../hooks/useAuthContext';
-import { toast } from 'react-toastify';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { validation } from '../../schema/createOrderSchema';
-import { useDocument } from '../../hooks/useDocument';
 
 //Creating the default form values. can also be used to reset the form. (Created outside of the component to prevent unnecessary re-renders.)
 const defaultValues = {
@@ -36,18 +41,17 @@ const CreateOrder = () => {
   const {
     user: { uid, displayName, photoURL, role },
   } = useAuthContext();
+  const history = useHistory();
+  const { id } = useParams();
+  const [documents, error] = useCollection('budgets'); // Fetches all documents
+  const { document } = useDocument('savedOrders', id);
 
-  const { documents, error } = useCollection('budgets'); // Fetches all documents
   const [addOrder, , ,] = useFirestore('orders'); // Access the addDocument function in the firestore Hook.
   const [addSavedOrder, , ,] = useFirestore('savedOrders'); // Access the addDocument function in the firestore Hook.
   const [_addEvent, , ,] = useFirestore('events');
   const addEventReference = useRef(_addEvent);
   const addEvent = addEventReference.current;
   const [codes, setCodes] = useState([]);
-  const history = useHistory();
-  const { id } = useParams();
-
-  const { document } = useDocument('savedOrders', id);
 
   //Fetching all the functions we'll need to control the form.
   const {
@@ -491,12 +495,7 @@ const CreateOrder = () => {
               <InputGroup>
                 <InputGroup.Text>£</InputGroup.Text>
                 <Form.Control
-                  value={parseFloat(
-                    getValues('total') ? getValues('total') : 0
-                  ).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                  value={formatCurrency(getValues('total'))}
                   type="text"
                   disabled
                 />

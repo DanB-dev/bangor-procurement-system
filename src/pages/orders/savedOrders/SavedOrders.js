@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useFirestore } from '../../../hooks/useFirestore';
 import SavedOrder from '../../../assets/save_order.png';
+import { formatCurrency, formatNumber } from '../../../utils/formatters';
 
 const SavedOrders = () => {
   const { user } = useAuthContext();
@@ -21,13 +22,13 @@ const SavedOrders = () => {
   const [, deleteOrder, ,] = useFirestore('savedOrders');
   const [orderId, setOrderId] = useState('');
   const { t } = useTranslation('common');
-  const { documents, error } = useCollection(
+  const [documents, error] = useCollection(
     'savedOrders',
     user.role !== 'Admin' && ['createdBy.uid', '==', user.uid]
   );
   const [currentFilter] = useState('all');
   const orders = documents
-    ? documents.filter((document) => {
+    ? documents.filter(() => {
         switch (currentFilter) {
           case 'all':
             return true;
@@ -94,26 +95,9 @@ const SavedOrders = () => {
                           <td>{i + 1}</td>
                           <td>{name}</td>
                           <td>{description}</td>
-                          <td>
-                            £
-                            {parseFloat(cost).toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
-                          <td>
-                            {parseInt(quantity).toLocaleString(undefined)}
-                          </td>
-                          <td>
-                            £
-                            {parseFloat(cost * quantity).toLocaleString(
-                              undefined,
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                          </td>
+                          <td>{formatCurrency(cost)}</td>
+                          <td>{formatNumber(quantity)}</td>
+                          <td>{formatCurrency(cost * quantity)}</td>
                         </tr>
                       )
                     )}
@@ -142,10 +126,10 @@ const SavedOrders = () => {
       ) : (
         <Card className="w-50 m-auto text-center">
           <Card.Body>
-            You have no saved orders right now.
+            {t('savedOrders.header')}
             <br />
             <small className="text-muted">
-              <em>You can save orders when creating a new order.</em>
+              <em>{t('savedOrders.small')}</em>
             </small>
             <img
               src={SavedOrder}
@@ -157,7 +141,7 @@ const SavedOrders = () => {
               }}
             />
             <br />
-            <small className="text-muted">(Save order example)</small>
+            <small className="text-muted">{t('savedOrders.caption')}</small>
           </Card.Body>
         </Card>
       )}

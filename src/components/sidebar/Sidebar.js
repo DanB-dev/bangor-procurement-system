@@ -12,6 +12,7 @@ import Ticket from '../../assets/ticket.svg';
 import Budget from '../../assets/budget.svg';
 import User from '../../assets/user.svg';
 import Star from '../../assets/star.svg';
+import School from '../../assets/school.svg';
 import { Avatar } from '../avatar/Avatar';
 
 export const Sidebar = () => {
@@ -50,7 +51,7 @@ export const Sidebar = () => {
             <li>
               <NavLink to="/savedOrders">
                 <img src={Star} alt="add project icon" />
-                <span>Saved {t('sidebar.links.orders')}</span>
+                <span>{t('sidebar.links.savedOrders')}</span>
               </NavLink>
             </li>
             <li>
@@ -66,6 +67,12 @@ export const Sidebar = () => {
                   <NavLink to="/budgets">
                     <img src={Budget} alt="add project icon" />
                     <span>{t('sidebar.links.budgets')}</span>
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/schools">
+                    <img src={School} alt="add project icon" />
+                    <span>{t('sidebar.links.schools')}</span>
                   </NavLink>
                 </li>
                 <li>

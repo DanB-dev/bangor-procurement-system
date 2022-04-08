@@ -26,7 +26,23 @@
 	"order": {
 		"cancel": "Canslo",
 		"created": "Creu",
+		"filterList": {
+			"actionNeeded": "Angen Gweithredu",
+			"all": "Holl",
+			"awaitingFinal": "Disgwyl Cwblhau",
+			"complete": "Cyflawn",
+			"orderPlaced": "Archeb wedi'i Gosod",
+			"ordered": "Archeb wedi'i Gosod",
+			"shipped": "Wedi'i gludo"
+		},
 		"header": "Archeb {{orderId}} - {{orderAmount}} Eitem",
+		"orderCard": {
+			"actionNeeded": "Angen Gweithredu",
+			"awaitingFinal": "Disgwyl Cwblhau",
+			"open": "\nArchebion Agored",
+			"total": "Cyfanswm Archebion"
+		},
+		"orders": "Archebion",
 		"recurring": "Cylchol",
 		"requestHeader": "Eitemau a archebwyd",
 		"requester": "Ymofynydd",
@@ -45,6 +61,11 @@
 		},
 		"total": "Cyfanswm"
 	},
+	"savedOrders": {
+		"caption": "(enghraifft arbed archeb)",
+		"header": "Nid oes gennych unrhyw orchmynion wedi'u cadw ar hyn o bryd.",
+		"small": "Gallwch arbed archebion wrth greu archeb newydd."
+	},
 	"sidebar": {
 		"footer": "Hawlfraint © (Insert Name Here)",
 		"links": {
@@ -52,6 +73,8 @@
 			"dashboard": "Dangosfwrdd",
 			"newOrder": "Archeb Newydd",
 			"orders": "Archebion",
+			"savedOrders": "Archebion Cadw",
+			"schools": "Ysgolion",
 			"users": "Defnyddwyr"
 		},
 		"title": "Helo {{displayName}}"

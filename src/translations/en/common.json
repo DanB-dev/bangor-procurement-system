@@ -26,7 +26,23 @@
 	"order": {
 		"cancel": "Cancel",
 		"created": "Created",
+		"filterList": {
+			"actionNeeded": "Action Needed",
+			"all": "All",
+			"awaitingFinal": "Awaiting Finalization",
+			"complete": "Complete",
+			"orderPlaced": "Order Placed",
+			"ordered": "Order Placed",
+			"shipped": "Shipped"
+		},
 		"header": "Order {{orderId}} - {{orderAmount}} Items",
+		"orderCard": {
+			"actionNeeded": "Action Needed",
+			"awaitingFinal": "Awaiting Finalization",
+			"open": "Open Orders",
+			"total": "Total Orders"
+		},
+		"orders": "Orders",
 		"recurring": "Recurring",
 		"requestHeader": "Requested Items",
 		"requester": "Requester",
@@ -45,6 +61,11 @@
 		},
 		"total": "Total"
 	},
+	"savedOrders": {
+		"caption": "(Save order example)",
+		"header": "You have no saved orders right now.",
+		"small": "You can save orders when creating a new order."
+	},
 	"sidebar": {
 		"footer": "Copyright © (Insert Name Here)",
 		"links": {
@@ -52,6 +73,8 @@
 			"dashboard": "Dashboard",
 			"newOrder": "New Order",
 			"orders": "Orders",
+			"savedOrders": "Saved Orders",
+			"schools": "Schools",
 			"users": "Users"
 		},
 		"title": "Hey {{displayName}}"

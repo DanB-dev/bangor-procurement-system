@@ -1,11 +1,17 @@
-import { format, formatDistanceToNow } from 'date-fns';
+// General Imports
 import React, { useEffect, useState } from 'react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { formatCurrency, formatNumber } from '../../utils/formatters';
+
+// Custom Hooks
+import { useAuthContext } from '../../hooks/useAuthContext';
+import { useFirestore } from '../../hooks/useFirestore';
+
+//Components
 import { Button, Modal } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { TableTemplate } from '../../components/table/TableTemplate';
-import { useAuthContext } from '../../hooks/useAuthContext';
-import { useFirestore } from '../../hooks/useFirestore';
 
 const OrderTable = ({ orders }) => {
   const {
@@ -85,10 +91,7 @@ const OrderTable = ({ orders }) => {
           options.push({
             budgetId,
             budgetCode,
-            total: parseFloat(total).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            }),
+            total: formatCurrency(total),
             id,
             action: id,
             createdAt: format(
@@ -96,7 +99,7 @@ const OrderTable = ({ orders }) => {
               "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
             ),
             recurring,
-            items: parseInt(items.length).toLocaleString(undefined),
+            items: formatNumber(items.length),
           });
         }
       );
@@ -117,7 +120,7 @@ const OrderTable = ({ orders }) => {
       },
       { Header: 'No. Items', accessor: 'items' },
       {
-        Header: 'Total (£)',
+        Header: 'Total',
         accessor: 'total', // accessor is the "key" in the data
       },
       {

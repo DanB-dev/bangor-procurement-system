@@ -23,12 +23,13 @@ import CreateOrder from './pages/orders/CreateOrder';
 import Orders from './pages/orders/Orders';
 import SavedOrders from './pages/orders/savedOrders/SavedOrders';
 import Schools from './pages/schools/Schools';
+import Users from './pages/admin/Users';
+import School from './pages/schools/School';
 
 //Styles
 import './App.css';
 import Order from './pages/orders/Order';
 import 'react-toastify/dist/ReactToastify.css';
-import { Users } from './pages/admin/Users';
 
 function App() {
   const { mode } = useTheme();
@@ -73,8 +74,11 @@ function App() {
                 <Route exact path="/createOrder/:id">
                   {user ? <CreateOrder /> : <Redirect to="/login" />}
                 </Route>
-                <Route path="/savedOrders">
+                <Route exact path="/savedOrders">
                   {user ? <SavedOrders /> : <Redirect to="/login" />}
+                </Route>
+                <Route exact path="/savedOrders/:id">
+                  {user ? <CreateOrder /> : <Redirect to="/login" />}
                 </Route>
 
                 {/* Budgets */}
@@ -118,7 +122,7 @@ function App() {
                 <Route path="/schools/:id">
                   {user ? (
                     user.role !== 'User' ? (
-                      <Budget />
+                      <School />
                     ) : (
                       <Redirect to="/" />
                     )

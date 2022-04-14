@@ -28,7 +28,7 @@ export const usePasswordReset = () => {
       }
     });
 
-  //Cleanup all async functions. the function is unmounted, the function will not attempt to dispatch notifications.
+  //Cleanup all async functions. If the function is unmounted, the function will not attempt to dispatch notifications.
   useEffect(() => {
     return () => {
       setIsCancelled(true);

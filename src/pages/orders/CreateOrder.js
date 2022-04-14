@@ -42,12 +42,18 @@ const CreateOrder = () => {
     user: { uid, displayName, photoURL, role },
   } = useAuthContext();
   const history = useHistory();
+
   const { id } = useParams();
   const [documents, error] = useCollection('budgets'); // Fetches all documents
-  const { document } = useDocument('savedOrders', id);
+  const [document] = useDocument(
+    history.location.pathname.split('/')[1] === 'savedOrders'
+      ? 'savedOrders'
+      : 'orders',
+    id
+  );
 
-  const [addOrder, , ,] = useFirestore('orders'); // Access the addDocument function in the firestore Hook.
-  const [addSavedOrder, , ,] = useFirestore('savedOrders'); // Access the addDocument function in the firestore Hook.
+  const [addOrder, , updateOrder] = useFirestore('orders'); // Access the addDocument function in the firestore Hook.
+  const [addSavedOrder, , updateSavedOrder] = useFirestore('savedOrders'); // Access the addDocument function in the firestore Hook.
   const [_addEvent, , ,] = useFirestore('events');
   const addEventReference = useRef(_addEvent);
   const addEvent = addEventReference.current;
@@ -136,76 +142,11 @@ const CreateOrder = () => {
     item,
     total,
   }) => {
-    toast.promise(
-      //Wrapping the addOrder in a promise. Let's us show the user the status of the request
-      addOrder({
-        status: 'orderPlaced',
-        budget: {
-          budgetId,
-          budgetCode,
-          budgetName,
-        },
-        items: [...item],
-        total,
-        createdBy: {
-          displayName,
-          photoURL,
-          uid,
-        },
-      }),
-      {
-        pending: {
-          render() {
-            return 'Creating Order...';
-          },
-        },
-        success: {
-          //If successful, also generate an event log.
-          render({ data }) {
-            toast.promise(
-              //Again wrapping in a promise to keep track of the status.
-              addEvent({
-                type: 'order',
-                event: 'placed',
-                by: { displayName, uid, photoURL, role },
-                orderId: data.payload,
-                budgetId: data.doc.budget.budgetId,
-              }),
-              {
-                pending: {
-                  render() {
-                    return 'Logging Order...';
-                  },
-                },
-                success: {
-                  type: 'info',
-                  render() {
-                    history.push('/orders');
-                    return 'Order Logged.';
-                  },
-                },
-                error: {
-                  render({ data }) {
-                    return 'Logging:' + data;
-                  },
-                },
-              }
-            );
-            return 'Order Created!';
-          },
-        },
-        error: {
-          render({ data }) {
-            return 'Placing:' + data;
-          },
-        },
-      }
-    );
-
-    // If the user wants to save the order, then we save it separately.
-    if (recurring) {
+    if (!document) {
       toast.promise(
-        addSavedOrder({
+        //Wrapping the addOrder in a promise. Let's us show the user the status of the request
+        addOrder({
+          status: 'orderPlaced',
           budget: {
             budgetId,
             budgetCode,
@@ -222,21 +163,172 @@ const CreateOrder = () => {
         {
           pending: {
             render() {
-              return 'Saving...';
+              return 'Creating Order...';
             },
           },
           success: {
-            render() {
-              return 'Saved Order!';
+            //If successful, also generate an event log.
+            render({ data }) {
+              toast.promise(
+                //Again wrapping in a promise to keep track of the status.
+                addEvent({
+                  type: 'order',
+                  event: 'placed',
+                  by: { displayName, uid, photoURL, role },
+                  orderId: data.payload,
+                  budgetId: data.doc.budget.budgetId,
+                }),
+                {
+                  pending: {
+                    render() {
+                      return 'Logging Order...';
+                    },
+                  },
+                  success: {
+                    type: 'info',
+                    render() {
+                      history.push('/orders');
+                      return 'Order Logged.';
+                    },
+                  },
+                  error: {
+                    render({ data }) {
+                      return 'Logging:' + data;
+                    },
+                  },
+                }
+              );
+              return 'Order Created!';
             },
           },
           error: {
             render({ data }) {
-              return 'Saving -' + data;
+              return 'Placing:' + data;
             },
           },
         }
       );
+
+      // If the user wants to save the order, then we save it separately.
+      if (recurring) {
+        toast.promise(
+          addSavedOrder({
+            budget: {
+              budgetId,
+              budgetCode,
+              budgetName,
+            },
+            items: [...item],
+            total,
+            createdBy: {
+              displayName,
+              photoURL,
+              uid,
+            },
+          }),
+          {
+            pending: {
+              render() {
+                return 'Saving...';
+              },
+            },
+            success: {
+              render() {
+                return 'Saved Order!';
+              },
+            },
+            error: {
+              render({ data }) {
+                return 'Saving -' + data;
+              },
+            },
+          }
+        );
+      }
+    } else {
+      if (history.location.pathname.split('/')[1] === 'savedOrders') {
+        toast.promise(
+          //Wrapping the addOrder in a promise. Let's us show the user the status of the request
+          updateSavedOrder(id, {
+            items: [...item],
+            total,
+          }),
+          {
+            pending: {
+              render() {
+                return 'Updating Order...';
+              },
+            },
+            success: {
+              //If successful, also generate an event log.
+              render() {
+                history.push('/savedOrders');
+                return 'Order Updated!';
+              },
+            },
+            error: {
+              render({ data }) {
+                return 'Updating:' + data;
+              },
+            },
+          }
+        );
+      } else {
+        toast.promise(
+          //Wrapping the addOrder in a promise. Let's us show the user the status of the request
+          updateOrder(id, {
+            items: [...item],
+            total,
+          }),
+          {
+            pending: {
+              render() {
+                return 'Updating Order...';
+              },
+            },
+            success: {
+              //If successful, also generate an event log.
+              render({ data }) {
+                toast.promise(
+                  //Again wrapping in a promise to keep track of the status.
+                  addEvent({
+                    type: 'order',
+                    event: 'edited',
+                    by: { displayName, uid, photoURL, role },
+                    orderId: data.payload,
+                    budgetId: document.budget.budgetId,
+                  }),
+                  {
+                    pending: {
+                      render() {
+                        return 'Logging Order change...';
+                      },
+                    },
+                    success: {
+                      type: 'info',
+                      render() {
+                        history.push(`/orders/${data.payload}`);
+                        return 'Order Change Logged.';
+                      },
+                    },
+                    error: {
+                      render({ data }) {
+                        return 'Logging:' + data;
+                      },
+                    },
+                  }
+                );
+                return 'Order Updated!';
+              },
+            },
+            error: {
+              render({ data }) {
+                return 'Updating:' + data;
+              },
+            },
+          }
+        );
+      }
     }
   };
 
@@ -262,18 +354,22 @@ const CreateOrder = () => {
                       <Select
                         {...field}
                         options={codes}
-                        styles={{
-                          control: (control) => ({
-                            ...control,
-                            borderColor:
-                              errors.code || dirtyFields.code
-                                ? !errors.code
-                                  ? '#198754'
-                                  : '#dc3545'
-                                : control.borderColor,
-                          }),
-                        }}
                         className="is-valid"
+                        theme={(theme) => ({
+                          ...theme,
+                          borderColor:
+                            errors.code || dirtyFields.code
+                              ? !errors.code
+                                ? '#198754'
+                                : '#dc3545'
+                              : control.borderColor,
+                          colors: {
+                            ...theme.colors,
+                            primary25: '#e2d0d2',
+                            primary50: '#f5f0f0',
+                            primary: '#b82234',
+                          },
+                        })}
                       />
                     )}
                   />
@@ -367,6 +463,7 @@ const CreateOrder = () => {
 
                   {fields.map((field, index) => (
                     <div
+                      key={field.ikey}
                       className="mb-1"
                       style={{
                         height: errors?.item?.[index] ? errorHeight : 'initial',
@@ -409,6 +506,7 @@ const CreateOrder = () => {
 
                   {fields.map((field, index) => (
                     <div
+                      key={field.ikey}
                       className="mb-1"
                       style={{
                         height: errors?.item?.[index] ? errorHeight : 'initial',
@@ -452,6 +550,7 @@ const CreateOrder = () => {
 
                   {fields.map((field, index) => (
                     <div
+                      key={field.ikey}
                       className="mb-1"
                       style={{
                         height: errors?.item?.[index] ? errorHeight : 'initial',

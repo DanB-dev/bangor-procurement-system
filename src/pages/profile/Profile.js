@@ -24,15 +24,16 @@ import { UpdateProfile } from './UpdateProfile';
 import { validation, fields } from '../../schema/updateProfileSchema';
 import { useFirestore } from '../../hooks/useFirestore';
 import { useAuthContext } from '../../hooks/useAuthContext';
+import { formatPhoneNumber } from '../../utils/formatters';
 
 const Profile = () => {
   const { user } = useAuthContext();
   const { id } = useParams();
-  const { document, error: userError } = useDocument('users', id);
+  const [document, userError] = useDocument('users', id);
   const [currentFilter, setCurrentFilter] = useState('all');
   const [addEvent, , ,] = useFirestore('events');
   const [, deleteUser, updateUser] = useFirestore('users'); // Access the addDocument function in the firestore Hook.
-  const { documents, error: orderError } = useCollection(
+  const [documents, orderError] = useCollection(
     'orders',
     ['createdBy.uid', '==', id] // Only fetch orders that match their UID
   );
@@ -210,15 +211,7 @@ const Profile = () => {
 
               <p className="text-muted text-left">
                 <img src={Phone} alt="room" className="me-2" />{' '}
-                {document.telNo
-                  ? ` ${
-                      document.telNo.substring(0, 5) +
-                      '-' +
-                      document.telNo.substring(5, 8) +
-                      '-' +
-                      document.telNo.substring(8, document.telNo.length)
-                    }`
-                  : 'No Tel'}
+                {document.telNo ? formatPhoneNumber(document.telNo) : 'No Tel'}
               </p>
               <p className="text-muted text-left">
                 <img src={Email} alt="room" className="me-2" />{' '}

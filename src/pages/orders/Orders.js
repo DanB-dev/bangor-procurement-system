@@ -72,13 +72,23 @@ const Orders = () => {
     { title: t('order.orderCard.awaitingFinal'), value: awaitingAuth },
   ];
   return (
-    <div>
+    <Container fluid>
+      {user.role === 'Admin' && (
+        <Alert variant="dark">
+          <Alert.Heading>Admin View</Alert.Heading>
+          <p>
+            As an admin you are able to view all users Orders. For a specific
+            user's orders, head to their profile.
+          </p>
+        </Alert>
+      )}
       <h2 className="page-title">{t('order.orders')}</h2>
       {error && <Alert variant="danger">{error.message}</Alert>}
+
       <Row>
         {/* Mapping through the array of order cards here. */}
-        {orderCards.map(({ title, value }) => (
-          <Col className="d-flex">
+        {orderCards.map(({ title, value }, i) => (
+          <Col className="d-flex" key={i}>
             <Card>
               <Card.Body>
                 <Card.Title className="text-muted">{title}</Card.Title>
@@ -88,14 +98,10 @@ const Orders = () => {
           </Col>
         ))}
       </Row>
-      <Container>
-        <OrderFilter
-          currentFilter={currentFilter}
-          changeFilter={changeFilter}
-        />
-        <OrderTable orders={orders} />
-      </Container>
-    </div>
+
+      <OrderFilter currentFilter={currentFilter} changeFilter={changeFilter} />
+      <OrderTable orders={orders} />
+    </Container>
   );
 };
 

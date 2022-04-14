@@ -19,6 +19,7 @@ const CreateSchool = () => {
   const [documents, error] = useCollection('users');
   const [isPending, setIsPending] = useState(false);
   const [addSchool, , , schoolResponse] = useFirestore('schools'); // Access the addDocument function in the firestore Hook.
+  const [, , updateUser] = useFirestore('users');
   const [_addEvent, , ,] = useFirestore('events');
   const addEventReference = useRef(_addEvent);
   const addEvent = addEventReference.current;
@@ -44,7 +45,7 @@ const CreateSchool = () => {
     if (documents) {
       const options = [];
       documents.forEach((u) => {
-        if (u.role === 'School Requisitions Officer' || u.role === 'Admin')
+        if (!u.assignedToSchool && u.role === 'School Requisitions Officer')
           options.push({ value: u, label: u.displayName + ' - ' + u.role });
       });
       setOptions(options);
@@ -57,6 +58,8 @@ const CreateSchool = () => {
         {
           name,
           code,
+          email: code.toLowerCase(),
+          telNo: '',
           createdBy: {
             displayName,
             photoURL,
@@ -79,6 +82,7 @@ const CreateSchool = () => {
         },
         success: {
           render() {
+            updateUser(reqOfficer.value.uid, { assignedToSchool: true });
             setIsPending(false);
             return (
               <div>
@@ -161,7 +165,27 @@ const CreateSchool = () => {
             <Controller
               control={control}
               name="reqOfficer"
-              render={({ field }) => <Select {...field} options={options} />}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={options}
+                  theme={(theme) => ({
+                    ...theme,
+                    borderColor:
+                      errors.code || dirtyFields.code
+                        ? !errors.code
+                          ? '#198754'
+                          : '#dc3545'
+                        : control.borderColor,
+                    colors: {
+                      ...theme.colors,
+                      primary25: '#e2d0d2',
+                      primary50: '#f5f0f0',
+                      primary: '#b82234',
+                    },
+                  })}
+                />
+              )}
             />
           </Form.Group>
 

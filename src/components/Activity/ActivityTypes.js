@@ -13,6 +13,7 @@ const activityTypes = (activity, budget) => {
       );
       break;
     case 'placed':
+    case 'edited':
     case 'cancelled':
       body = (
         <p className="ms-2 me-auto">
@@ -35,7 +36,11 @@ const activityTypes = (activity, budget) => {
       );
       break;
     default:
-      body = <p>Unknown activity</p>;
+      body = (
+        <p className="ms-2 me-auto">
+          {activity.by.displayName} - Unknown Activity
+        </p>
+      );
       break;
   }
   return body;

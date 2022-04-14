@@ -8,7 +8,7 @@ import BudgetSide from './BudgetSide';
 const Budget = () => {
   const { id } = useParams();
 
-  const { document, error } = useDocument('budgets', id);
+  const [document, error] = useDocument('budgets', id);
 
   if (error) {
     return <Alert variant="danger">{error}</Alert>;

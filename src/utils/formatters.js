@@ -22,3 +22,13 @@ const COMPACT_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
 export const formatCompactNumber = (number) => {
   return COMPACT_NUMBER_FORMATTER.format(number);
 };
+
+export const formatPhoneNumber = (number) => {
+  return ` ${
+    number.substring(0, 5) +
+    '-' +
+    number.substring(5, 8) +
+    '-' +
+    number.substring(8, number.length)
+  }`;
+};

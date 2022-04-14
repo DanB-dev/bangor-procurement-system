@@ -26,5 +26,5 @@ export const useDocument = (collection, id) => {
     return () => unsub();
   }, [collection, id]);
 
-  return { document, error };
+  return [document, error];
 };

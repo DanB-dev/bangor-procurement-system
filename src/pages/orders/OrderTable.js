@@ -152,7 +152,7 @@ const OrderTable = ({ orders }) => {
                 size="sm"
                 className="ms-1"
                 variant="outline-primary"
-                onClick={(e) => {
+                onClick={() => {
                   setShow(true);
                   setOrderDetails({
                     orderId: allCells[5].value,

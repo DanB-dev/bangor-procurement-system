@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { formatCurrency, formatNumber } from '../../utils/formatters';
 
 // Custom Hooks
@@ -35,7 +35,7 @@ const Order = ({ orderId }) => {
     orderId ? orderId : id,
   ]);
 
-  const { document, error } = useDocument('orders', orderId ? orderId : id);
+  const [document, error] = useDocument('orders', orderId ? orderId : id);
 
   useEffect(() => {
     if (documents) {
@@ -168,7 +168,12 @@ const Order = ({ orderId }) => {
           document.status === 'orderPlaced' && (
             <>
               <Button variant="success">Accept</Button>
-              <Button variant="danger">Deny</Button>
+              <Button variant="danger" className="mx-2">
+                Deny
+              </Button>
+              <Button as={Link} to={`/createOrder/${document.id}`}>
+                Edit
+              </Button>
             </>
           )}
         <hr />

@@ -65,6 +65,12 @@ const SavedOrders = () => {
 
   return (
     <>
+      {user.role === 'Admin' && (
+        <Alert variant="dark">
+          <Alert.Heading>Admin View</Alert.Heading>
+          <p>As an admin you are able to view all users saved orders.</p>
+        </Alert>
+      )}
       <h2 className="page-title mb-2">Saved Orders</h2>
       {error && <Alert variant="danger">{error.message}</Alert>}
       {orders && orders.length > 0 ? (
@@ -107,7 +113,7 @@ const SavedOrders = () => {
               <Card.Footer className="text-end">
                 <ButtonGroup aria-label="Action Items" className="me-5">
                   <Button>Re-order</Button>
-                  <Button as={Link} to={`createOrder/${order.id}`}>
+                  <Button as={Link} to={`savedOrders/${order.id}`}>
                     Edit
                   </Button>
                   <Button

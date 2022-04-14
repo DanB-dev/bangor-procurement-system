@@ -42,6 +42,13 @@ const SchoolsTable = () => {
       {
         Header: 'School Req. Officer',
         accessor: 'reqOfficer',
+        Cell: ({ row: { allCells } }) => {
+          return allCells[2].value ? (
+            allCells[2].value
+          ) : (
+            <p className="text-muted">(Unassigned)</p>
+          );
+        },
       },
       {
         Header: 'Created By',

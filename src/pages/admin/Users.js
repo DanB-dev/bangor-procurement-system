@@ -14,7 +14,7 @@ import { useFirestore } from '../../hooks/useFirestore';
 import { usePasswordReset } from '../../hooks/usePasswordReset';
 import UserFilter from './UserFilter';
 
-export const Users = () => {
+const Users = () => {
   const { user } = useAuthContext();
   const [documents] = useCollection('users');
   const { resetPassword } = usePasswordReset();
@@ -248,3 +248,4 @@ export const Users = () => {
     </>
   );
 };
+export default Users;

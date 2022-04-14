@@ -48,9 +48,6 @@ const CreateBudget = () => {
     mode: 'onChange', // Validate the file on each change to the input (default: onSubmit).
     resolver: yupResolver(validation), // This resolver is used to validate our form values.
   });
-
-  console.log(errors);
-
   // Get all the users that are eligible to be added to the budget.
   useEffect(() => {
     if (users) {
@@ -197,7 +194,25 @@ const CreateBudget = () => {
               control={control}
               name="school"
               render={({ field }) => (
-                <Select {...field} options={schoolOptions} />
+                <Select
+                  {...field}
+                  options={schoolOptions}
+                  theme={(theme) => ({
+                    ...theme,
+                    borderColor:
+                      errors.code || dirtyFields.code
+                        ? !errors.code
+                          ? '#198754'
+                          : '#dc3545'
+                        : control.borderColor,
+                    colors: {
+                      ...theme.colors,
+                      primary25: '#e2d0d2',
+                      primary50: '#f5f0f0',
+                      primary: '#b82234',
+                    },
+                  })}
+                />
               )}
             />
           </Form.Group>
@@ -207,7 +222,26 @@ const CreateBudget = () => {
               control={control}
               name="holders"
               render={({ field }) => (
-                <Select {...field} isMulti options={usersOptions} />
+                <Select
+                  {...field}
+                  isMulti
+                  options={usersOptions}
+                  theme={(theme) => ({
+                    ...theme,
+                    borderColor:
+                      errors.code || dirtyFields.code
+                        ? !errors.code
+                          ? '#198754'
+                          : '#dc3545'
+                        : control.borderColor,
+                    colors: {
+                      ...theme.colors,
+                      primary25: '#e2d0d2',
+                      primary50: '#f5f0f0',
+                      primary: '#b82234',
+                    },
+                  })}
+                />
               )}
             />
           </Form.Group>

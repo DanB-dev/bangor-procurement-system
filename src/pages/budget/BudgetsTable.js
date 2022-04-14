@@ -1,46 +1,12 @@
 // General Imports
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-
-//Custom Hooks
-import { useAuthContext } from '../../hooks/useAuthContext';
-import { useCollection } from '../../hooks/useCollection';
 
 //Components
 import { TableTemplate } from '../../components/table/TableTemplate';
 
-const BudgetsTable = () => {
-  const {
-    user: { role, uid },
-  } = useAuthContext();
-
-  const [documents] = useCollection('budgets');
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    if (documents) {
-      const options = [];
-      documents.forEach(({ code, name, holders, createdBy, id, school }) => {
-        if (createdBy.uid === uid || role !== 'User') {
-          options.push({
-            code,
-            name,
-            school: school.code,
-            holders: [
-              ...holders.map(({ displayName }, i) =>
-                holders.length > i + 1 ? displayName + ', ' : displayName
-              ),
-            ],
-            createdBy: createdBy.displayName,
-            id,
-          });
-        }
-      });
-      setData(options);
-    }
-  }, [documents, role, uid]);
-
+const BudgetsTable = ({ data, hideSchool = false }) => {
   const columns = React.useMemo(
     () => [
       {
@@ -50,6 +16,7 @@ const BudgetsTable = () => {
       {
         Header: 'School',
         accessor: 'school', // accessor is the "key" in the data
+        show: !hideSchool,
       },
       {
         Header: 'Budget Code',
@@ -83,7 +50,7 @@ const BudgetsTable = () => {
         },
       },
     ],
-    []
+    [hideSchool]
   );
   return (
     <TableTemplate

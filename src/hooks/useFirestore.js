@@ -52,11 +52,28 @@ export const useFirestore = (collection) => {
       }
     });
 
-  const deleteDocument = async (id) =>
+  const deleteDocument = async (id = null, query = null) =>
     new Promise(async (resolve, reject) => {
       dispatch({ type: 'IS_PENDING' });
       if (id === null) {
-        throw new Error('The Id was null');
+        try {
+          if (query === null) throw new Error('No id or query was provided');
+          let check = await ref.where(...query).get();
+          console.log(check);
+          if (check.empty) throw new Error('No Notifications Found');
+
+          check.forEach(async (c) => {
+            await ref.doc(c.id).delete();
+          });
+
+          dispatchIfNotCancelled({
+            type: 'DELETED_DOCUMENT',
+          });
+          resolve(id);
+        } catch (error) {
+          dispatchIfNotCancelled({ type: 'ERROR', payload: error.message });
+          reject(error.message);
+        }
       }
       try {
         await ref.doc(id).delete();

@@ -27,6 +27,7 @@
 		"cancel": "Canslo",
 		"created": "Creu",
 		"filterList": {
+			"accepted": "Derbyniwyd",
 			"actionNeeded": "Angen Gweithredu",
 			"all": "Holl",
 			"awaitingFinal": "Disgwyl Cwblhau",
@@ -47,6 +48,7 @@
 		"requestHeader": "Eitemau a archebwyd",
 		"requester": "Ymofynydd",
 		"stat": {
+			"accepted": "Derbyniwyd",
 			"approved": "Cymeradwy",
 			"orderPlaced": "Wedi Ei Gosod",
 			"unknown": "Anhysbys"

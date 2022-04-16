@@ -43,6 +43,13 @@
   border-radius: 4px 0 0 4px;
   border-right: none;
 }
+.sidebar .links a:hover:not(.active) {
+  color: var(--bg-color);
+  background: var(--primary-color);
+  filter: brightness(120%);
+  border-radius: 4px 0 0 4px;
+  border: 0px solid transparent;
+}
 .sidebar.dark .links a.active {
   background: var(--bg-color-dark);
   color: var(--heading-color-dark);
@@ -50,6 +57,9 @@
 
 .sidebar .links .active img {
   filter: invert(40%);
+}
+.sidebar .links a:hover:not(.active) img {
+  filter: invert(70%);
 }
 .sidebar.dark .links .active img {
   filter: invert(90%);

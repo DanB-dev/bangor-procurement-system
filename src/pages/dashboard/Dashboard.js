@@ -2,12 +2,28 @@ import { useAuthContext } from '../../hooks/useAuthContext';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
-import { Container, Alert } from 'react-bootstrap';
+import { Container, Alert, Button, Badge } from 'react-bootstrap';
+import { useCollection } from '../../hooks/useCollection';
+import { useFirestore } from '../../hooks/useFirestore';
 
 const Dashboard = () => {
   const { t } = useTranslation('common');
   const { user } = useAuthContext();
-  const error = '';
+  const [userNotifications, error] = useCollection('userNotifications', [
+    'forUser',
+    '==',
+    user.uid,
+  ]);
+  const [departmentNotifications] = useCollection(
+    'departmentNotifications',
+    user.role !== 'Admin' && ['for', '==', user.role]
+  );
+  const [, deleteUserNotification] = useFirestore('userNotifications');
+
+  const handleDeleteNotification = (id) => {
+    deleteUserNotification(id);
+  };
+
   return (
     <div className="dashboard">
       {error && (
@@ -38,6 +54,63 @@ const Dashboard = () => {
           </Alert>
         </Container>
       )}
+      <Container>
+        <h4>
+          Individual Notifications{' '}
+          {userNotifications && <Badge>{userNotifications.length}</Badge>}
+        </h4>
+        {userNotifications && userNotifications.length > 0 ? (
+          <>
+            {userNotifications.map((n) => (
+              <Alert key={n.id} variant="light" className="d-flex flex-row ">
+                <div style={{ lineHeight: '210%' }}>
+                  Order <u>{n.orderId}</u> was{' '}
+                  <b className="text-danger">{n.event}</b> by {n.by.displayName}{' '}
+                </div>
+                <Button
+                  className="ms-auto"
+                  variant="outline-primary"
+                  onClick={() => handleDeleteNotification(n.id)}
+                >
+                  Mark As Read
+                </Button>
+              </Alert>
+            ))}
+          </>
+        ) : (
+          <p>You don't have any notifications at the moment.</p>
+        )}
+        <br />
+        <h4>
+          Department Notifications{' '}
+          {departmentNotifications && (
+            <Badge>{departmentNotifications.length}</Badge>
+          )}
+        </h4>
+        {departmentNotifications && departmentNotifications.length > 0 ? (
+          <>
+            {departmentNotifications.map((d) => (
+              <Alert key={d.id} variant="light" className="d-flex flex-row ">
+                <div style={{ lineHeight: '210%' }}>
+                  Order <u>{d.orderId}</u> was{' '}
+                  <b className="text-success">{d.event}</b> by{' '}
+                  {d.by.displayName} and is waiting to be authorized.
+                </div>
+                <Button
+                  as={Link}
+                  to={`/orders/${d.orderId}`}
+                  className="ms-auto"
+                  variant="outline-primary"
+                >
+                  View
+                </Button>
+              </Alert>
+            ))}
+          </>
+        ) : (
+          <p>There are no notifications for your department.</p>
+        )}
+      </Container>
     </div>
   );
 };

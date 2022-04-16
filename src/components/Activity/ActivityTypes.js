@@ -14,6 +14,7 @@ const activityTypes = (activity, budget) => {
       break;
     case 'placed':
     case 'edited':
+    case 'accepted':
     case 'cancelled':
       body = (
         <p className="ms-2 me-auto">

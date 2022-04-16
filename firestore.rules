@@ -33,12 +33,21 @@ service cloud.firestore {
  
       allow read, write: if request.auth.uid == resource.data.createdBy.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role =='Admin';
     }
-        match /schools/{document=**}{
+    match /schools/{document=**}{
       allow create, read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role =='Admin';
  
       allow read, write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role =='Admin';
     }
+        match /userNotifications/{document=**}{
+      allow create, read: if request.auth != null;
  
+      allow read, write: if request.auth.uid == resource.data.forUser || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role =='Admin';
+    }
+     match /departmentNotifications/{document=**}{
+      allow create, read: if request.auth != null;
+ 
+      allow read, write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == resource.data.for || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role =='Admin';
+    }
 
   }
 }

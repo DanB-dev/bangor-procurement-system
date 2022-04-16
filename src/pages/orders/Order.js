@@ -1,8 +1,8 @@
 // General Imports
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useHistory } from 'react-router-dom';
 import { formatCurrency, formatNumber } from '../../utils/formatters';
 
 // Custom Hooks
@@ -20,15 +20,30 @@ import {
   Row,
   Table,
   Alert,
+  Modal,
 } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import { useFirestore } from '../../hooks/useFirestore';
 
 const Order = ({ orderId }) => {
-  const { user } = useAuthContext();
+  const {
+    user: { uid, displayName, photoURL, role },
+  } = useAuthContext();
   const { id } = useParams();
+  const history = useHistory();
   const { t } = useTranslation('common');
   const [items, setItems] = useState([]);
   const [activity, setActivity] = useState([]);
-
+  const [show, setShow] = useState(false);
+  const [modal, setModal] = useState(null);
+  const [, deleteOrder, updateOrder] = useFirestore('orders');
+  const [addUserNotification, , ,] = useFirestore('userNotifications');
+  const [addDepartmentNotification, , ,] = useFirestore(
+    'departmentNotifications'
+  );
+  const [_addEvent, , ,] = useFirestore('events');
+  const addEventReference = useRef(_addEvent);
+  const addEvent = addEventReference.current;
   const [documents] = useCollection('events', [
     'orderId',
     '==',
@@ -80,11 +95,131 @@ const Order = ({ orderId }) => {
     switch (document.status) {
       case 'orderPlaced':
         return t('order.stat.orderPlaced');
+      case 'accepted':
+        return t('order.stat.accepted');
       case 'approved':
         return t('order.stat.approved');
       default:
         return t('order.stat.unknown');
     }
+  };
+
+  const handleClose = () => {
+    setShow(false);
+  };
+
+  const handleAcceptOrder = () => {
+    setShow(false);
+    toast.promise(updateOrder(id, { status: 'accepted' }), {
+      pending: {
+        render() {
+          return 'Accepting Order...';
+        },
+      },
+      success: {
+        render({ data }) {
+          addDepartmentNotification({
+            event: 'accepted',
+            by: { displayName, uid, photoURL, role },
+            budgetId: document.budget.budgetId,
+            orderId: id,
+            for: 'Finance Officer',
+            readBy: [],
+          });
+          toast.promise(
+            //Again wrapping in a promise to keep track of the status.
+            addEvent({
+              type: 'order',
+              event: 'accepted',
+              by: { displayName, uid, photoURL, role },
+              orderId: data.payload,
+              budgetId: document.budget.budgetId,
+            }),
+            {
+              pending: {
+                render() {
+                  return 'Logging Status...';
+                },
+              },
+              success: {
+                type: 'info',
+                render() {
+                  return 'Status Logged.';
+                },
+              },
+              error: {
+                render({ data }) {
+                  return 'Logging:' + data;
+                },
+              },
+            }
+          );
+          return 'Order Accepted!';
+        },
+      },
+      error: {
+        render({ data }) {
+          return '' + data;
+        },
+      },
+    });
+  };
+
+  const handleDenyOrder = () => {
+    setShow(false);
+    toast.promise(deleteOrder(id, { status: 'accepted' }), {
+      pending: {
+        render() {
+          return 'Denying Order...';
+        },
+      },
+      success: {
+        render({ data }) {
+          addUserNotification({
+            event: 'denied',
+            by: { displayName, uid, photoURL, role },
+            budgetId: document.budget.budgetId,
+            orderId: id,
+            forUser: document.createdBy.uid,
+          });
+          history.push('/orders');
+          toast.promise(
+            //Again wrapping in a promise to keep track of the status.
+            addEvent({
+              type: 'order',
+              event: 'denied',
+              by: { displayName, uid, photoURL, role },
+              orderId: data,
+              budgetId: document.budget.budgetId,
+            }),
+            {
+              pending: {
+                render() {
+                  return 'Logging Status...';
+                },
+              },
+              success: {
+                type: 'info',
+                render() {
+                  return 'Status Logged.';
+                },
+              },
+              error: {
+                render({ data }) {
+                  return 'Logging:' + data;
+                },
+              },
+            }
+          );
+          return 'Order Denied!';
+        },
+      },
+      error: {
+        render({ data }) {
+          return '' + data;
+        },
+      },
+    });
   };
 
   return (
@@ -95,7 +230,7 @@ const Order = ({ orderId }) => {
             orderId: document.id,
             orderAmount: document.items.length,
           })}
-          {(document.createdBy.uid === user.uid || user.role === 'Admin') && (
+          {(document.createdBy.uid === uid || role === 'Admin') && (
             <Button className="ms-3" size="sm">
               {t('order.cancel')}
             </Button>
@@ -164,21 +299,88 @@ const Order = ({ orderId }) => {
         </Row>
 
         <h6 className={`mt-3`}>Order Actions</h6>
-        {(user.role === 'Admin' || user.role === 'Budget Holder') &&
+        {document.status === 'accepted' && role !== 'Admin' && (
+          <div className="mt-2">
+            <small>
+              This order has been accepted by a budget holder, and cannot be
+              edited by you any longer. If you need to make a change, please
+              contact an Admin.{' '}
+              <em>Editing an order will reset it's status.</em>
+            </small>
+          </div>
+        )}
+        {(role === 'Admin' || role === 'Budget Holder') &&
           document.status === 'orderPlaced' && (
             <>
-              <Button variant="success">Accept</Button>
-              <Button variant="danger" className="mx-2">
-                Deny
+              <Button
+                variant="success"
+                onClick={() => {
+                  setShow(true);
+                  setModal('accept');
+                }}
+              >
+                Accept
               </Button>
-              <Button as={Link} to={`/createOrder/${document.id}`}>
-                Edit
+              <Button
+                variant="danger"
+                className="mx-2"
+                onClick={() => {
+                  setShow(true);
+                  setModal('deny');
+                }}
+              >
+                Deny
               </Button>
             </>
           )}
+
+        {(role === 'Admin' ||
+          (document.createdBy.uid === uid &&
+            document.status === 'orderPlaced')) && (
+          <Button as={Link} to={`/createOrder/${document.id}`}>
+            Edit
+          </Button>
+        )}
+
         <hr />
         <ActivityTracker activity={activity} />
       </Container>
+
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {modal === 'accept' ? 'Accept Order' : 'Deny Order'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Alert variant="warning">
+            {modal === 'accept' ? (
+              <>
+                Accepting this order will disable the ability for the requester
+                to edit anything
+              </>
+            ) : (
+              <>
+                Denying this order will also delete it, and the requester will
+                have to fill in all the details to order again.
+              </>
+            )}
+          </Alert>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() =>
+              modal === 'accept' ? handleAcceptOrder() : handleDenyOrder()
+            }
+          >
+            {modal === 'accept' ? 'Accept' : 'Deny'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

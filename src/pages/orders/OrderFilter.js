@@ -8,6 +8,7 @@ const OrderFilter = ({ currentFilter, changeFilter }) => {
   const filterList = [
     { value: 'all', label: t('order.filterList.all') },
     { value: 'orderPlaced', label: t('order.filterList.orderPlaced') },
+    { value: 'accepted', label: t('order.filterList.accepted') },
     { value: 'actionNeeded', label: t('order.filterList.actionNeeded') },
     { value: 'awaitingAuth', label: t('order.filterList.awaitingFinal') },
     { value: 'ordered', label: t('order.filterList.ordered') },

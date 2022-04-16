@@ -27,6 +27,7 @@
 		"cancel": "Cancel",
 		"created": "Created",
 		"filterList": {
+			"accepted": "Accepted",
 			"actionNeeded": "Action Needed",
 			"all": "All",
 			"awaitingFinal": "Awaiting Finalization",
@@ -47,6 +48,7 @@
 		"requestHeader": "Requested Items",
 		"requester": "Requester",
 		"stat": {
+			"accepted": "Accepted",
 			"approved": "Approved",
 			"orderPlaced": "Order Placed",
 			"unknown": "Unknown"

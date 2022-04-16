@@ -31,6 +31,7 @@ const Orders = () => {
           case 'all':
             return true;
           case 'orderPlaced':
+          case 'accepted':
           case 'actionNeeded':
           case 'awaitingAuth':
           case 'ordered':
@@ -77,7 +78,7 @@ const Orders = () => {
         <Alert variant="dark">
           <Alert.Heading>Admin View</Alert.Heading>
           <p>
-            As an admin you are able to view all users Orders. For a specific
+            As an admin you are able to view all users' Orders. For a specific
             user's orders, head to their profile.
           </p>
         </Alert>

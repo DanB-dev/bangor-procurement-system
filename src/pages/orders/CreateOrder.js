@@ -57,6 +57,9 @@ const CreateOrder = () => {
   const [_addEvent, , ,] = useFirestore('events');
   const addEventReference = useRef(_addEvent);
   const addEvent = addEventReference.current;
+  const [, deleteDepartmentNotification, ,] = useFirestore(
+    'departmentNotifications'
+  );
   const [codes, setCodes] = useState([]);
 
   //Fetching all the functions we'll need to control the form.
@@ -277,6 +280,7 @@ const CreateOrder = () => {
         toast.promise(
           //Wrapping the addOrder in a promise. Let's us show the user the status of the request
           updateOrder(id, {
+            status: 'orderPlaced',
             items: [...item],
             total,
           }),
@@ -289,6 +293,11 @@ const CreateOrder = () => {
             success: {
               //If successful, also generate an event log.
               render({ data }) {
+                deleteDepartmentNotification(null, [
+                  'orderId',
+                  '==',
+                  data.payload,
+                ]);
                 toast.promise(
                   //Again wrapping in a promise to keep track of the status.
                   addEvent({
@@ -301,7 +310,7 @@ const CreateOrder = () => {
                   {
                     pending: {
                       render() {
-                        return 'Logging Order change...';
+                        return 'Logging Order Change...';
                       },
                     },
                     success: {

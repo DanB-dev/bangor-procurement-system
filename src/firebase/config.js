@@ -3,6 +3,12 @@ import 'firebase/firestore';
 import 'firebase/auth';
 import 'firebase/storage';
 
+/**
+ * Usually Exposing our API Key inside of a react app is not a good idea.
+ * In Firebase not only is it ok, it's vital for users to be able to connect and query our project.
+ * We use Authentication steps and backend rules to verify and authenticate each query received by the api.
+ */
+
 const firebaseConfig = {
   apiKey: 'AIzaSyAzN6fIGwqedSkw4xj9AnY9XxThlEhFCAk',
   authDomain: 'bangor-procurement-system.firebaseapp.com',

@@ -55,7 +55,7 @@ const Dashboard = () => {
         </Container>
       )}
       <Container>
-        <h4>
+        <h4 className="mb-2">
           Individual Notifications{' '}
           {userNotifications && <Badge>{userNotifications.length}</Badge>}
         </h4>
@@ -81,7 +81,7 @@ const Dashboard = () => {
           <p>You don't have any notifications at the moment.</p>
         )}
         <br />
-        <h4>
+        <h4 className="mb-2">
           Department Notifications{' '}
           {departmentNotifications && (
             <Badge>{departmentNotifications.length}</Badge>

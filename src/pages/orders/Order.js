@@ -702,7 +702,8 @@ const Order = ({ orderId }) => {
 
         {(role === 'Admin' ||
           (document.createdBy.uid === uid &&
-            document.status === 'orderPlaced')) && (
+            document.status === 'orderPlaced' &&
+            document.status !== 'ordered')) && (
           <Button as={Link} to={`/createOrder/${document.id}`}>
             Edit
           </Button>

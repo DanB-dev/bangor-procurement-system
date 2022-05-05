@@ -64,8 +64,29 @@ const Dashboard = () => {
             {userNotifications.map((n) => (
               <Alert key={n.id} variant="light" className="d-flex flex-row ">
                 <div style={{ lineHeight: '210%' }}>
-                  Order <u>{n.orderId}</u> was{' '}
-                  <b className="text-danger">{n.event}</b> by {n.by.displayName}{' '}
+                  {n.event === 'ordered' ? (
+                    <>
+                      Items have been <b className="text-info">Ordered</b> for
+                      Order <u>{n.orderId}</u>
+                    </>
+                  ) : (
+                    <>
+                      {' '}
+                      Order <u>{n.orderId}</u> was{' '}
+                      <b
+                        className={
+                          n.event === 'denied'
+                            ? 'text-danger'
+                            : n.event === 'completed'
+                            ? 'text-success'
+                            : 'text-info'
+                        }
+                      >
+                        {n.event}
+                      </b>{' '}
+                      by {n.by.displayName}{' '}
+                    </>
+                  )}
                 </div>
                 <Button
                   className="ms-auto"

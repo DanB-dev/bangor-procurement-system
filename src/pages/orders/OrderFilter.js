@@ -9,10 +9,8 @@ const OrderFilter = ({ currentFilter, changeFilter }) => {
     { value: 'all', label: t('order.filterList.all') },
     { value: 'orderPlaced', label: t('order.filterList.orderPlaced') },
     { value: 'accepted', label: t('order.filterList.accepted') },
-    { value: 'actionNeeded', label: t('order.filterList.actionNeeded') },
-    { value: 'awaitingAuth', label: t('order.filterList.awaitingFinal') },
-    { value: 'ordered', label: t('order.filterList.ordered') },
-    { value: 'shipped', label: t('order.filterList.shipped') },
+    { value: 'authorised', label: t('order.filterList.awaitingAuth') },
+    { value: 'ordered', label: t('order.stat.ordered') },
     { value: 'complete', label: t('order.filterList.complete') },
   ];
 

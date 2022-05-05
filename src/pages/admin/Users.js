@@ -22,6 +22,7 @@ const Users = () => {
   const [data, setData] = useState([]);
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState('');
+  const [orders, setOrders] = useState('');
 
   const [currentFilter, setCurrentFilter] = useState('all');
   const changeFilter = (newFilter) => {
@@ -85,23 +86,27 @@ const Users = () => {
     setShow(false);
   };
 
+  useEffect(() => {
+    let docs = documents
+      ? documents.filter((document) => {
+          switch (currentFilter) {
+            case 'all':
+              return true;
+            case 'User':
+            case 'Budget Holder':
+            case 'Finance Officer':
+            case 'School Requisitions Officer':
+            case 'Admin':
+              return document.role === currentFilter;
+            default:
+              return false;
+          }
+        })
+      : null; //If there are no documents in that match set to null.
+
+    setOrders(docs);
+  }, [setOrders, currentFilter, documents]);
   //Filtering the orders using the current filter.
-  const orders = documents
-    ? documents.filter((document) => {
-        switch (currentFilter) {
-          case 'all':
-            return true;
-          case 'User':
-          case 'Budget Holder':
-          case 'Finance Officer':
-          case 'School Requisitions Officer':
-          case 'Admin':
-            return document.role === currentFilter;
-          default:
-            return false;
-        }
-      })
-    : null; //If there are no documents in that match set to null.
 
   //formatting all users ready for display.
   useEffect(() => {

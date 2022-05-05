@@ -13,6 +13,7 @@ export const defaultValues = {
 export const validation = yup.object({
   name: yup.string().required('A school name is required.'),
   code: yup.string().required('A code is required.'),
+  reqOfficer: yup.object().required('A Req Officer is required.'),
 });
 
 /* 

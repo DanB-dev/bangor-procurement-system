@@ -187,6 +187,13 @@ const CreateSchool = () => {
                 />
               )}
             />
+            <Form.Text
+              className={
+                errors && errors['reqOfficer'] ? 'text-danger' : 'text-muted'
+              }
+            >
+              {errors && errors['reqOfficer']?.message}
+            </Form.Text>
           </Form.Group>
 
           {!isPending && (

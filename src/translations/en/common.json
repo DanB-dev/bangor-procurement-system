@@ -30,7 +30,7 @@
 			"accepted": "Accepted",
 			"actionNeeded": "Action Needed",
 			"all": "All",
-			"awaitingFinal": "Awaiting Finalization",
+			"awaitingAuth": "Awaiting Authorisation",
 			"complete": "Complete",
 			"orderPlaced": "Order Placed",
 			"ordered": "Order Placed",
@@ -38,8 +38,8 @@
 		},
 		"header": "Order {{orderId}} - {{orderAmount}} Items",
 		"orderCard": {
-			"actionNeeded": "Action Needed",
-			"awaitingFinal": "Awaiting Finalization",
+			"accepted": "Accepted",
+			"awaitingAuth": "Awaiting Authorisation",
 			"open": "Open Orders",
 			"total": "Total Orders"
 		},
@@ -50,7 +50,10 @@
 		"stat": {
 			"accepted": "Accepted",
 			"approved": "Approved",
+			"authorised": "Authorised",
+			"delivered": "Delivered",
 			"orderPlaced": "Order Placed",
+			"ordered": "Items Ordered",
 			"unknown": "Unknown"
 		},
 		"status": "Status",

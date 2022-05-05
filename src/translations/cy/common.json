@@ -30,7 +30,7 @@
 			"accepted": "Derbyniwyd",
 			"actionNeeded": "Angen Gweithredu",
 			"all": "Holl",
-			"awaitingFinal": "Disgwyl Cwblhau",
+			"awaitingAuth": "Disgwyl Cwblhau",
 			"complete": "Cyflawn",
 			"orderPlaced": "Archeb wedi'i Gosod",
 			"ordered": "Archeb wedi'i Gosod",
@@ -38,8 +38,8 @@
 		},
 		"header": "Archeb {{orderId}} - {{orderAmount}} Eitem",
 		"orderCard": {
-			"actionNeeded": "Angen Gweithredu",
-			"awaitingFinal": "Disgwyl Cwblhau",
+			"accepted": "Derbyniwyd",
+			"awaitingAuth": "Disgwyl Cwblhau",
 			"open": "\nArchebion Agored",
 			"total": "Cyfanswm Archebion"
 		},
@@ -50,7 +50,10 @@
 		"stat": {
 			"accepted": "Derbyniwyd",
 			"approved": "Cymeradwy",
+			"authorised": "Awdurdodedig",
+			"delivered": "Cyflwyno",
 			"orderPlaced": "Wedi Ei Gosod",
+			"ordered": "Eitemau wedi'u harchebu",
 			"unknown": "Anhysbys"
 		},
 		"status": "Statws",

@@ -38,9 +38,8 @@ const Order = ({ orderId }) => {
   const [modal, setModal] = useState(null);
   const [, deleteOrder, updateOrder] = useFirestore('orders');
   const [addUserNotification, , ,] = useFirestore('userNotifications');
-  const [addDepartmentNotification, , ,] = useFirestore(
-    'departmentNotifications'
-  );
+  const [addDepartmentNotification, deleteDepartmentNotification, ,] =
+    useFirestore('departmentNotifications');
   const [_addEvent, , ,] = useFirestore('events');
   const addEventReference = useRef(_addEvent);
   const addEvent = addEventReference.current;
@@ -51,6 +50,12 @@ const Order = ({ orderId }) => {
   ]);
 
   const [document, error] = useDocument('orders', orderId ? orderId : id);
+
+  const [budgets] = useCollection('budgets');
+  const [budget, setBudget] = useState('');
+
+  const [schools] = useCollection('schools');
+  const [school, setSchool] = useState('');
 
   useEffect(() => {
     if (documents) {
@@ -68,6 +73,20 @@ const Order = ({ orderId }) => {
       setActivity(options);
     }
   }, [setActivity, documents]);
+
+  useEffect(() => {
+    if (document && budgets) {
+      setBudget(
+        budgets.find((budget) => budget.id === document.budget.budgetId)
+      );
+    }
+  }, [document, budgets, setBudget]);
+
+  useEffect(() => {
+    if (budgets && schools) {
+      setSchool(schools.find((school) => school.id === budget.school.id));
+    }
+  }, [budget, budgets, schools, setSchool]);
 
   useEffect(() => {
     if (document) {
@@ -97,8 +116,12 @@ const Order = ({ orderId }) => {
         return t('order.stat.orderPlaced');
       case 'accepted':
         return t('order.stat.accepted');
-      case 'approved':
-        return t('order.stat.approved');
+      case 'authorised':
+        return t('order.stat.authorised');
+      case 'ordered':
+        return t('order.stat.ordered');
+      case 'delivered':
+        return t('order.stat.delivered');
       default:
         return t('order.stat.unknown');
     }
@@ -164,6 +187,62 @@ const Order = ({ orderId }) => {
       },
     });
   };
+  const handleAuthoriseOrder = () => {
+    setShow(false);
+    toast.promise(updateOrder(id, { status: 'authorised' }), {
+      pending: {
+        render() {
+          return 'Authorising Order';
+        },
+      },
+      success: {
+        render({ data }) {
+          addUserNotification({
+            event: 'authorised',
+            by: { displayName, uid, photoURL, role },
+            budgetId: document.budget.budgetId,
+            orderId: id,
+            forUser: school.reqOfficer.displayName,
+          });
+          deleteDepartmentNotification(null, ['orderId', '==', id]);
+          toast.promise(
+            //Again wrapping in a promise to keep track of the status.
+            addEvent({
+              type: 'order',
+              event: 'authorised',
+              by: { displayName, uid, photoURL, role },
+              orderId: data.payload,
+              budgetId: document.budget.budgetId,
+            }),
+            {
+              pending: {
+                render() {
+                  return 'Logging Status...';
+                },
+              },
+              success: {
+                type: 'info',
+                render() {
+                  return 'Status Logged.';
+                },
+              },
+              error: {
+                render({ data }) {
+                  return 'Logging:' + data;
+                },
+              },
+            }
+          );
+          return 'Order Authorised!';
+        },
+      },
+      error: {
+        render({ data }) {
+          return '' + data;
+        },
+      },
+    });
+  };
 
   const handleDenyOrder = () => {
     setShow(false);
@@ -220,6 +299,220 @@ const Order = ({ orderId }) => {
         },
       },
     });
+  };
+
+  const handleOrderedOrder = () => {
+    setShow(false);
+    toast.promise(updateOrder(id, { status: 'ordered' }), {
+      pending: {
+        render() {
+          return 'Marking Order';
+        },
+      },
+      success: {
+        render({ data }) {
+          addUserNotification({
+            event: 'ordered',
+            by: { displayName, uid, photoURL, role },
+            budgetId: document.budget.budgetId,
+            orderId: id,
+            forUser: document.createdBy.uid,
+          });
+          toast.promise(
+            //Again wrapping in a promise to keep track of the status.
+            addEvent({
+              type: 'order',
+              event: 'ordered',
+              by: { displayName, uid, photoURL, role },
+              orderId: data.payload,
+              budgetId: document.budget.budgetId,
+            }),
+            {
+              pending: {
+                render() {
+                  return 'Logging Status...';
+                },
+              },
+              success: {
+                type: 'info',
+                render() {
+                  return 'Status Logged.';
+                },
+              },
+              error: {
+                render({ data }) {
+                  return 'Logging:' + data;
+                },
+              },
+            }
+          );
+          return 'Order Marked!';
+        },
+      },
+      error: {
+        render({ data }) {
+          return '' + data;
+        },
+      },
+    });
+  };
+
+  const handleDeliveredOrder = () => {
+    setShow(false);
+    toast.promise(updateOrder(id, { status: 'delivered' }), {
+      pending: {
+        render() {
+          return 'Marking Order';
+        },
+      },
+      success: {
+        render({ data }) {
+          addUserNotification({
+            event: 'delivered',
+            by: { displayName, uid, photoURL, role },
+            budgetId: document.budget.budgetId,
+            orderId: id,
+            forUser: document.createdBy.uid,
+          });
+          toast.promise(
+            //Again wrapping in a promise to keep track of the status.
+            addEvent({
+              type: 'order',
+              event: 'delivered',
+              by: { displayName, uid, photoURL, role },
+              orderId: data.payload,
+              budgetId: document.budget.budgetId,
+            }),
+            {
+              pending: {
+                render() {
+                  return 'Logging Status...';
+                },
+              },
+              success: {
+                type: 'info',
+                render() {
+                  return 'Status Logged.';
+                },
+              },
+              error: {
+                render({ data }) {
+                  return 'Logging:' + data;
+                },
+              },
+            }
+          );
+          return 'Order Marked!';
+        },
+      },
+      error: {
+        render({ data }) {
+          return '' + data;
+        },
+      },
+    });
+  };
+
+  const handleCompleteOrder = () => {
+    setShow(false);
+    toast.promise(deleteOrder(id, { status: 'accepted' }), {
+      pending: {
+        render() {
+          return 'Completing Order...';
+        },
+      },
+      success: {
+        render({ data }) {
+          addUserNotification({
+            event: 'completed',
+            by: { displayName, uid, photoURL, role },
+            budgetId: document.budget.budgetId,
+            orderId: id,
+            forUser: document.createdBy.uid,
+          });
+          history.push('/orders');
+          toast.promise(
+            //Again wrapping in a promise to keep track of the status.
+            addEvent({
+              type: 'order',
+              event: 'completed',
+              by: { displayName, uid, photoURL, role },
+              orderId: data,
+              budgetId: document.budget.budgetId,
+            }),
+            {
+              pending: {
+                render() {
+                  return 'Logging Status...';
+                },
+              },
+              success: {
+                type: 'info',
+                render() {
+                  return 'Status Logged.';
+                },
+              },
+              error: {
+                render({ data }) {
+                  return 'Logging:' + data;
+                },
+              },
+            }
+          );
+          return 'Order Complete!';
+        },
+      },
+      error: {
+        render({ data }) {
+          return '' + data;
+        },
+      },
+    });
+  };
+
+  const handleSubmit = () => {
+    switch (modal) {
+      case 'accept':
+        handleAcceptOrder();
+        break;
+      case 'deny':
+        handleDenyOrder();
+        break;
+      case 'authorise':
+        handleAuthoriseOrder();
+        break;
+      case 'order':
+        handleOrderedOrder();
+        break;
+      case 'delivered':
+        handleDeliveredOrder();
+        break;
+      case 'complete':
+        handleCompleteOrder();
+        break;
+      default:
+        break;
+    }
+  };
+
+  const HandleShowWarning = () => {
+    switch (modal) {
+      case 'accept':
+        return 'Accepting this order will disable the ability for the requester to edit anything';
+      case 'deny':
+        return 'Denying this order will also delete it, and the requester will have to fill in all the details to order again.';
+
+      case 'authorise':
+        return 'Authorising this order will notify the procurement officer to begin purchasing the items.';
+      case 'order':
+        return 'Marking the items as ordered will notify the Finance Department to Pay any invoices for the items.';
+      case 'delivered':
+        return 'This will notify the requester that their items have been delivered.';
+      case 'complete':
+        return 'This will remove the order from the system. The Activity log for this order will saved.';
+      default:
+        break;
+    }
   };
 
   return (
@@ -334,6 +627,79 @@ const Order = ({ orderId }) => {
             </>
           )}
 
+        {(role === 'Admin' || role === 'Finance Officer') &&
+          document.status === 'accepted' && (
+            <>
+              <Button
+                variant="success"
+                onClick={() => {
+                  setShow(true);
+                  setModal('authorise');
+                }}
+              >
+                Authorise Order
+              </Button>
+              <Button
+                variant="danger"
+                className="mx-2"
+                onClick={() => {
+                  setShow(true);
+                  setModal('deny');
+                }}
+              >
+                Deny Order
+              </Button>
+            </>
+          )}
+
+        {(role === 'Admin' || role === 'School Requisitions Officer') &&
+          document.status === 'authorised' && (
+            <>
+              <Button
+                variant="success"
+                className="me-2"
+                onClick={() => {
+                  setShow(true);
+                  setModal('order');
+                }}
+              >
+                Confirm All Items Ordered
+              </Button>
+            </>
+          )}
+
+        {(role === 'Admin' || role === 'School Requisitions Officer') &&
+          document.status === 'delivered' && (
+            <>
+              <Button
+                variant="success"
+                className="me-2"
+                onClick={() => {
+                  setShow(true);
+                  setModal('complete');
+                }}
+              >
+                Complete Order
+              </Button>
+            </>
+          )}
+
+        {(role === 'Admin' || role === 'School Requisitions Officer') &&
+          document.status === 'ordered' && (
+            <>
+              <Button
+                variant="success"
+                className="me-2"
+                onClick={() => {
+                  setShow(true);
+                  setModal('delivered');
+                }}
+              >
+                Mark as delivered
+              </Button>
+            </>
+          )}
+
         {(role === 'Admin' ||
           (document.createdBy.uid === uid &&
             document.status === 'orderPlaced')) && (
@@ -348,24 +714,10 @@ const Order = ({ orderId }) => {
 
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>
-            {modal === 'accept' ? 'Accept Order' : 'Deny Order'}
-          </Modal.Title>
+          <Modal.Title className="text-capitalize">{modal} Order</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Alert variant="warning">
-            {modal === 'accept' ? (
-              <>
-                Accepting this order will disable the ability for the requester
-                to edit anything
-              </>
-            ) : (
-              <>
-                Denying this order will also delete it, and the requester will
-                have to fill in all the details to order again.
-              </>
-            )}
-          </Alert>
+          <Alert variant="warning">{<HandleShowWarning modal={modal} />}</Alert>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
@@ -373,11 +725,10 @@ const Order = ({ orderId }) => {
           </Button>
           <Button
             variant="primary"
-            onClick={() =>
-              modal === 'accept' ? handleAcceptOrder() : handleDenyOrder()
-            }
+            className="text-capitalize"
+            onClick={handleSubmit}
           >
-            {modal === 'accept' ? 'Accept' : 'Deny'}
+            {modal}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -33,9 +33,8 @@ const Orders = () => {
           case 'orderPlaced':
           case 'accepted':
           case 'actionNeeded':
-          case 'awaitingAuth':
+          case 'authorised':
           case 'ordered':
-          case 'shipping':
           case 'complete':
             return document.status === currentFilter;
           default:
@@ -55,13 +54,13 @@ const Orders = () => {
 
   const actionNeeded = documents
     ? documents.filter((document) => {
-        return document.status === 'actionNeeded';
+        return document.status === 'accepted';
       }).length
     : 0;
 
   const awaitingAuth = documents
     ? documents.filter((document) => {
-        return document.status === 'awaitingAuth';
+        return document.status === 'authorised';
       }).length
     : 0;
 
@@ -69,8 +68,8 @@ const Orders = () => {
   const orderCards = [
     { title: t('order.orderCard.total'), value: totalOrders },
     { title: t('order.orderCard.open'), value: openOrders },
-    { title: t('order.orderCard.actionNeeded'), value: actionNeeded },
-    { title: t('order.orderCard.awaitingFinal'), value: awaitingAuth },
+    { title: t('order.orderCard.accepted'), value: actionNeeded },
+    { title: t('order.orderCard.awaitingAuth'), value: awaitingAuth },
   ];
   return (
     <Container fluid>

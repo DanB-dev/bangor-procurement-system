@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const activityTypes = (activity, budget) => {
   let body = null;
@@ -15,14 +14,14 @@ const activityTypes = (activity, budget) => {
     case 'placed':
     case 'edited':
     case 'accepted':
+    case 'authorised':
     case 'cancelled':
+    case 'completed':
       body = (
         <p className="ms-2 me-auto">
           {activity.by.displayName} -{' '}
           <span className="text-capitalize">{activity.event} Order</span>:{' '}
-          <Link to={`/orders/${activity.orderId}`} className="fw-bold btn-link">
-            {activity.orderId}
-          </Link>
+          <span className="fw-bold btn-link">{activity.orderId}</span>
         </p>
       );
       break;
@@ -33,6 +32,24 @@ const activityTypes = (activity, budget) => {
           {activity.by.displayName} -{' '}
           <span className="text-capitalize">{activity.event}</span>:
           <span className="fw-bold"> {activity.holder}</span>
+        </p>
+      );
+      break;
+    case 'ordered':
+      body = (
+        <p className="ms-2 me-auto">
+          {activity.by.displayName} - Marked Items as{' '}
+          <span className="text-capitalize">{activity.event}</span> for:{' '}
+          <span to={`/orders/${activity.orderId}`} className="fw-bold btn-link">
+            {activity.orderId}
+          </span>
+        </p>
+      );
+      break;
+    case 'delivered':
+      body = (
+        <p className="ms-2 me-auto">
+          Items have been delivered to the Requisitions Officer.
         </p>
       );
       break;

@@ -1,5 +1,5 @@
 // General Imports
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // Custom Hooks
 import { useAuthContext } from '../../hooks/useAuthContext';
@@ -14,19 +14,41 @@ import { useTranslation } from 'react-i18next';
 const Orders = () => {
   const { user } = useAuthContext();
   const { t } = useTranslation('common');
-  const [documents, error] = useCollection(
-    'orders',
-    user.role !== 'Admin' && ['createdBy.uid', '==', user.uid] //If the user is not an Admin, then only fetch orders that match their UID
-  );
+
+  const [budgets] = useCollection('budgets');
+  const [budget, setBudget] = useState('');
+  const [documents, error] = useCollection('orders');
+  const [orders2, setOrders2] = useState('');
   const [currentFilter, setCurrentFilter] = useState('all');
 
+  useEffect(() => {
+    if (budgets) {
+      setBudget(budgets.find((budget) => budget.holders[0].id === user.uid));
+    }
+  }, [budgets, setBudget]);
+  console.log(budget);
+
+  useEffect(() => {
+    if (budgets && documents) {
+      if (user.role === 'Admin' || 'Finance Officer') setOrders2(documents);
+      if (user.role === 'Budget Holder') {
+        setOrders2(
+          documents.filter((doc) => doc.budget.budgetCode === budget.code)
+        );
+      }
+      if (user.role === 'User') {
+        setOrders2(documents.filter((doc) => doc.createdBy.uid === user.uid));
+      }
+    }
+  }, [documents, budgets, setBudget]);
+  console.log(orders2);
   const changeFilter = (newFilter) => {
     setCurrentFilter(newFilter);
   };
 
   //Filtering the orders using the current filter.
-  const orders = documents
-    ? documents.filter((document) => {
+  const orders = orders2
+    ? orders2.filter((document) => {
         switch (currentFilter) {
           case 'all':
             return true;
@@ -43,23 +65,23 @@ const Orders = () => {
       })
     : null; //If there are no documents in that match set to null.
 
-  const totalOrders = documents ? documents.length : 0;
+  const totalOrders = orders2 ? orders2.length : 0;
 
   //Setting overview Numbers.
-  const openOrders = documents
-    ? documents.filter((document) => {
+  const openOrders = orders2
+    ? orders2.filter((document) => {
         return document.status !== 'complete';
       }).length
     : 0;
 
-  const actionNeeded = documents
-    ? documents.filter((document) => {
+  const actionNeeded = orders2
+    ? orders2.filter((document) => {
         return document.status === 'accepted';
       }).length
     : 0;
 
-  const awaitingAuth = documents
-    ? documents.filter((document) => {
+  const awaitingAuth = orders2
+    ? orders2.filter((document) => {
         return document.status === 'authorised';
       }).length
     : 0;

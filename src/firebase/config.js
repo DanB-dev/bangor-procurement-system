@@ -2,6 +2,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 import 'firebase/storage';
+import 'firebase/performance';
 
 /**
  * Usually Exposing our API Key inside of a react app is not a good idea.
@@ -23,6 +24,8 @@ const projectFirestore = firebase.firestore();
 const projectAuth = firebase.auth();
 const projectStorage = firebase.storage();
 const projectPersistence = firebase.auth;
+// Initialize Performance Monitoring and get a reference to the service
+const projectPerf = firebase.performance();
 
 const timestamp = firebase.firestore.Timestamp;
 
